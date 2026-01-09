@@ -13,7 +13,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, currency = '₹' }) 
   const allPrices = product.subsections?.flatMap(sub => sub.options?.map(opt => opt.price) || []) || [];
   const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
   
-  const firstOption = product.subsections?.[0]?.options?.[0];
   const isSoldOut = product.inventory === 0;
 
   return (
@@ -34,25 +33,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, currency = '₹' }) 
           )}
         </div>
         
-        <div className="pt-4 flex flex-col flex-grow">
-          <div className="mb-2">
-            <h3 className="text-base font-black text-slate-900 uppercase tracking-tight line-clamp-1 italic">
+        <div className="pt-5 flex flex-col flex-grow">
+          <div className="mb-3">
+            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight line-clamp-1 italic">
               {product.title}
             </h3>
-            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">{product.category}</span>
+            <span className="text-[12px] text-slate-400 font-bold uppercase tracking-widest">{product.category}</span>
           </div>
           
           <div className="mt-auto">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
                <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">From</span>
-                  <span className="font-black text-slate-900 text-lg italic tracking-tighter">
+                  <span className="font-black text-slate-900 text-xl italic tracking-tighter">
                     {currency}{minPrice}
                   </span>
                </div>
             </div>
 
-            <div className={`w-full ${isSoldOut ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white group-hover:bg-blue-600'} font-black text-[12px] py-3.5 rounded-xl uppercase tracking-widest text-center transition-all italic`}>
+            <div className={`w-full ${isSoldOut ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white group-hover:bg-blue-600'} font-black text-[13px] py-4 rounded-xl uppercase tracking-widest text-center transition-all italic shadow-md group-hover:shadow-blue-600/20`}>
               {isSoldOut ? 'Out of Stock' : 'Buy Now'}
             </div>
           </div>
@@ -62,5 +61,4 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, currency = '₹' }) 
   );
 };
 
-// Added missing default export
 export default ProductCard;
