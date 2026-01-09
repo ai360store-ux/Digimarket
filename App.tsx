@@ -30,7 +30,7 @@ const ScrollToTop = () => {
 };
 
 const App: React.FC = () => {
-  // Circuit Breaker Hydration
+  // Robust Hydration with Fallback to prevent blank pages
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('dm_products');
@@ -38,7 +38,6 @@ const App: React.FC = () => {
       const parsed = JSON.parse(saved);
       return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_PRODUCTS;
     } catch (e) {
-      localStorage.removeItem('dm_products'); // Clear corrupted data
       return INITIAL_PRODUCTS;
     }
   });
@@ -67,7 +66,6 @@ const App: React.FC = () => {
     return localStorage.getItem('dm_admin_auth') === 'true';
   });
 
-  // Sync state to LocalStorage
   useEffect(() => {
     localStorage.setItem('dm_products', JSON.stringify(products));
     localStorage.setItem('dm_categories', JSON.stringify(categories));
