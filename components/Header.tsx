@@ -15,6 +15,9 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // Safety fallback for brand name
+  const brandName = settings?.brandName || 'REPOSITORY';
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
@@ -47,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
         <div className="flex items-center gap-10">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-xl italic">V</div>
-            <span className="text-slate-900 font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">{settings.brandName}</span>
+            <span className="text-slate-900 font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">{brandName}</span>
           </Link>
           
           <div className="hidden lg:flex items-center gap-8">
@@ -81,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
                     onClick={() => setShowSuggestions(false)}
                     className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 transition-colors group"
                   >
-                    <img src={s.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover border border-slate-50" />
+                    <img src={s.images?.[0] || ''} alt="" className="w-10 h-10 rounded-lg object-cover border border-slate-50" />
                     <div>
                       <p className="text-[13px] font-bold text-slate-900 uppercase tracking-tight">{s.title}</p>
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{s.category}</p>
@@ -99,7 +102,7 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
       
       {/* Category Bar - Slim */}
       <div className="max-w-[1500px] mx-auto px-4 md:px-8 h-10 overflow-x-auto no-scrollbar flex items-center gap-10 text-[11px] font-bold uppercase tracking-widest bg-white border-t border-slate-50">
-        {categories.map(cat => (
+        {(categories || []).map(cat => (
           <Link key={cat.id} to={`/category/${cat.slug}`} className="text-slate-400 hover:text-slate-900 flex items-center gap-2 transition-colors whitespace-nowrap">
             <span className="text-base">{cat.icon}</span>
             {cat.name}
