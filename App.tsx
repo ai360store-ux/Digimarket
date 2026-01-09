@@ -24,18 +24,21 @@ import AdminLayout from './components/AdminLayout';
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   }, [pathname]);
   return null;
 };
 
 const App: React.FC = () => {
+  // Circuit Breaker Hydration
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('dm_products');
-      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+      if (!saved) return INITIAL_PRODUCTS;
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_PRODUCTS;
     } catch (e) {
-      console.error("Failed to load products:", e);
+      localStorage.removeItem('dm_products'); // Clear corrupted data
       return INITIAL_PRODUCTS;
     }
   });
@@ -43,7 +46,8 @@ const App: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>(() => {
     try {
       const saved = localStorage.getItem('dm_categories');
-      return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+      if (!saved) return INITIAL_CATEGORIES;
+      return JSON.parse(saved);
     } catch (e) {
       return INITIAL_CATEGORIES;
     }
@@ -52,7 +56,8 @@ const App: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const saved = localStorage.getItem('dm_settings');
-      return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+      if (!saved) return INITIAL_SETTINGS;
+      return JSON.parse(saved);
     } catch (e) {
       return INITIAL_SETTINGS;
     }
@@ -62,17 +67,12 @@ const App: React.FC = () => {
     return localStorage.getItem('dm_admin_auth') === 'true';
   });
 
+  // Sync state to LocalStorage
   useEffect(() => {
     localStorage.setItem('dm_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
     localStorage.setItem('dm_categories', JSON.stringify(categories));
-  }, [categories]);
-
-  useEffect(() => {
     localStorage.setItem('dm_settings', JSON.stringify(settings));
-  }, [settings]);
+  }, [products, categories, settings]);
 
   const handleUpdateProduct = (updated: Product) => {
     setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
@@ -107,10 +107,7 @@ const App: React.FC = () => {
             <>
               <Header categories={categories} products={products} settings={settings} />
               <main className="flex-grow page-content-wrapper">
-                <ProductDetail 
-                  products={products} 
-                  settings={settings} 
-                />
+                <ProductDetail products={products} settings={settings} />
               </main>
               <Footer settings={settings} />
             </>
@@ -141,6 +138,8 @@ const App: React.FC = () => {
           <Route path="/admin/products/edit/:id" element={<ProtectedRoute><AdminProductForm products={products} onSave={handleUpdateProduct} categories={categories} settings={settings} /></ProtectedRoute>} />
           <Route path="/admin/categories" element={<ProtectedRoute><AdminCategories categories={categories} setCategories={setCategories} /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings settings={settings} setSettings={setSettings} /></ProtectedRoute>} />
+          
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
 
         <a 
