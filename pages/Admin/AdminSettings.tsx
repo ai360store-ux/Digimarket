@@ -48,7 +48,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ settings, setSettings, pr
       if (field === 'projectId') {
         newConfig.url = `https://${trimmedValue}.supabase.co`;
       }
-      // Save to localStorage immediately for real-time updates
+      // Save to localStorage immediately for bootstrap/config (Required for auth)
+      // This is ACCEPTABLE as it is just credentials, not content data.
       localStorage.setItem('dm_supabase_config', JSON.stringify(newConfig));
       return newConfig;
     });
