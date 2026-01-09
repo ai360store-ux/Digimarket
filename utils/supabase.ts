@@ -25,6 +25,9 @@ let supabaseInstance: any = null;
 
 export const initSupabase = () => {
   const config = getSupabaseConfig();
+  // Clear existing instance to allow re-initialization with new keys
+  supabaseInstance = null;
+  
   if (config.url && config.key && validateUrl(config.url)) {
     try {
       supabaseInstance = createClient(config.url, config.key);
@@ -44,6 +47,7 @@ export const supabase = () => supabaseInstance || initSupabase();
 
 export const isCloudConnected = () => {
   const config = getSupabaseConfig();
+  // Ensure we have a valid URL and Key in config AND a live instance
   return !!(config.url && config.key && supabaseInstance);
 };
 
@@ -80,7 +84,6 @@ export const fetchFromCloud = async (table: string) => {
       .select('data');
     
     if (error) {
-      // If table doesn't exist, we return empty so fallback logic can take over
       if (error.code === '42P01') {
         console.warn(`Supabase: Table ${table} not found yet.`);
         return [];
