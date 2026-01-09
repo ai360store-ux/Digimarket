@@ -10,24 +10,31 @@ const validateUrl = (url: string) => {
   }
 };
 
+/**
+ * Retrieves the master vault credentials from permanent storage.
+ */
 export const getSupabaseConfig = () => {
   try {
     const saved = localStorage.getItem('dm_supabase_config');
     if (saved) {
       const parsed = JSON.parse(saved);
+      // Ensure the URL is correctly constructed from the Project ID
       if (parsed.projectId && !parsed.url) {
         parsed.url = `https://${parsed.projectId}.supabase.co`;
       }
       return parsed;
     }
   } catch (e) {
-    console.error("Config Retrieval Error:", e);
+    console.error("Critical Storage Retrieval Error:", e);
   }
   return { url: '', key: '', projectId: '' };
 };
 
 let supabaseInstance: any = null;
 
+/**
+ * Initializes the global system bridge using the stored master credentials.
+ */
 export const initSupabase = () => {
   const config = getSupabaseConfig();
   
@@ -38,7 +45,7 @@ export const initSupabase = () => {
         supabaseInstance = createClient(url, config.key);
         return supabaseInstance;
       } catch (e) {
-        console.error("System Bridge Initialization Failed:", e);
+        console.error("Database Handshake Failure:", e);
       }
     }
   }
@@ -46,17 +53,23 @@ export const initSupabase = () => {
   return null;
 };
 
-// Auto-init on script load
+// Immediate initialization attempt
 initSupabase();
 
+/**
+ * Accessor for the active system bridge. 
+ * Re-initializes automatically if credentials have been updated.
+ */
 export const supabase = () => {
-  if (!supabaseInstance) return initSupabase();
+  // If no instance exists but we have keys, initialize now.
+  if (!supabaseInstance) {
+    return initSupabase();
+  }
   return supabaseInstance;
 };
 
 /**
- * Global Connection Status.
- * Returns true if the Master Vault Credentials are set in the system.
+ * Global Bridge Status.
  */
 export const isCloudConnected = () => {
   const config = getSupabaseConfig();
@@ -75,7 +88,7 @@ export const saveToCloud = async (table: string, id: string, data: any) => {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error(`Global Sync Error (${table}):`, error);
+    console.error(`Global System Sync Error (${table}):`, error);
     throw error;
   }
 };
@@ -90,12 +103,12 @@ export const fetchFromCloud = async (table: string) => {
       .select('data');
     
     if (error) {
-      if (error.code === '42P01') return []; // Table doesn't exist yet
+      if (error.code === '42P01') return []; // Infrastructure not provisioned
       throw error;
     }
     return data?.map((item: any) => item.data) || [];
   } catch (e) {
-    console.error(`Global Pull Error (${table}):`, e);
+    console.error(`Global System Pull Error (${table}):`, e);
     return [];
   }
 };
