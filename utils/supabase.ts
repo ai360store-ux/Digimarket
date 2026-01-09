@@ -217,7 +217,7 @@ export const saveToCloud = async (table: string, id: string, data: any) => {
 
 export const fetchFromCloud = async (table: string) => {
   const client = supabase();
-  if (!client) return [];
+  if (!client) return { data: [], error: 'no-client' };
 
   try {
     const { data, error } = await client
@@ -225,12 +225,12 @@ export const fetchFromCloud = async (table: string) => {
       .select('data');
 
     if (error) {
-      if (error.code === '42P01') return []; // Infrastructure not provisioned
+      if (error.code === '42P01') return { data: [], error: 'missing-table' }; // Infrastructure not provisioned
       throw error;
     }
-    return data?.map((item: any) => item.data) || [];
+    return { data: data?.map((item: any) => item.data) || [], error: null };
   } catch (e) {
     console.error(`Global System Pull Error (${table}):`, e);
-    return [];
+    return { data: [], error: 'fetch-error' };
   }
 };

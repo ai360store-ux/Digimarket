@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_SETTINGS } from './store/mockData.ts';
 import { Product, Category, AppSettings } from './types.ts';
 import { isCloudConnected, fetchFromCloud, saveToCloud } from './utils/supabase.ts';
@@ -35,43 +35,45 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('dm_admin_auth') === 'true');
 
+  // Add a new state to track setup requirement
+  const [setupRequired, setSetupRequired] = useState(false);
+
   useEffect(() => {
     const initData = async () => {
       try {
-        // 1. Initialize with Defaults or Empty
-        // For a clean "theme", we probably shouldn't auto-load mock data if we want a real DB feeling,
-        // but for now we keep INITIAL_PRODUCTS as a fallback if DB is empty to show *something*.
-        // However, we do NOT load from LocalStorage anymore.
-
         const fallbackProducts = INITIAL_PRODUCTS;
         const fallbackCategories = INITIAL_CATEGORIES;
         const fallbackSettings = INITIAL_SETTINGS;
 
-        // 2. Try Cloud if bridge is active
         if (isCloudConnected()) {
           console.log("Cloud Bridge Active: Syncing components...");
-          const [cloudP, cloudC, cloudS] = await Promise.all([
+
+          // Fetch data with error checking
+          const [pResult, cResult, sResult] = await Promise.all([
             fetchFromCloud('dm_products'),
             fetchFromCloud('dm_categories'),
             fetchFromCloud('dm_settings')
           ]);
 
-          // Use cloud data if available, otherwise use defaults (but DO NOT failover to localstorage)
-          // actually if cloudP is empty array, it means DB is empty. We can show mock data or empty.
-          // Let's show mock data if brand new, to give the user a starting point, OR just what's in DB.
-          // User said "Only DB". So if DB is empty, maybe we should show empty?
-          // But that might break the UI if it expects data. 
-          // Let's stick to the behavior: Cloud Data > Mock Data (Memory) > Empty. 
-          // Crucially: NO LOCALSTORAGE READS.
+          // CHECK FOR MISSING INFRASTRUCTURE
+          if (pResult.error === 'missing-table' || cResult.error === 'missing-table') {
+            setSetupRequired(true); // Alert the user!
+            // Fallback to defaults so the app doesn't crash, but user knows to fix DB.
+            setProducts(fallbackProducts);
+            setCategories(fallbackCategories);
+            setSettings(fallbackSettings);
+          } else {
+            const cloudP = pResult.data;
+            const cloudC = cResult.data;
+            const cloudS = sResult.data;
 
-          setProducts(cloudP && cloudP.length > 0 ? cloudP : fallbackProducts);
-          setCategories(cloudC && cloudC.length > 0 ? cloudC : fallbackCategories);
+            setProducts(cloudP && cloudP.length > 0 ? cloudP : fallbackProducts);
+            setCategories(cloudC && cloudC.length > 0 ? cloudC : fallbackCategories);
+            const finalSettings = (cloudS && cloudS.length > 0 && cloudS[0]) ? cloudS[0] : fallbackSettings;
+            setSettings(finalSettings);
+          }
 
-          // CRITICAL: Ensure settings is never undefined
-          const finalSettings = (cloudS && cloudS.length > 0 && cloudS[0]) ? cloudS[0] : fallbackSettings;
-          setSettings(finalSettings);
         } else {
-          // No cloud connection? Just load mock data (in memory only)
           setProducts(fallbackProducts);
           setCategories(fallbackCategories);
           setSettings(fallbackSettings);
@@ -145,6 +147,21 @@ const App: React.FC = () => {
   return (
     <Router>
       <ScrollToTop />
+
+      {/* DB SETUP ALERT */}
+      {setupRequired && (
+        <div className="fixed top-0 left-0 w-full z-[9999] bg-rose-600 text-white px-4 py-3 flex items-center justify-center gap-4 shadow-xl">
+          <span className="text-xl">⚠️</span>
+          <div>
+            <p className="text-sm font-bold uppercase tracking-widest">Database Not Configured</p>
+            <p className="text-xs opacity-90">Tables are missing in Supabase. Your changes will NOT be saved.</p>
+          </div>
+          <Link to="/admin/settings" className="bg-white text-rose-600 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-rose-50 transition-colors">
+            Fix This
+          </Link>
+        </div>
+      )}
+
       <div className="flex flex-col min-h-screen bg-white selection:bg-blue-600 selection:text-white">
         <Routes>
           <Route path="/" element={
