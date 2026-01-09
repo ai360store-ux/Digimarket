@@ -34,12 +34,36 @@ export const getSupabaseConfig = () => {
     console.error("Critical Storage Retrieval Error:", e);
   }
 
-  // FALLBACK: Default Global Configuration (Hardwired)
-  // This ensures the site is ALWAYS linked for public visitors
+  // FALLBACK: Environment Variables (The proper way to configure for production/distribution)
+  const envUrl = import.meta.env.VITE_SUPABASE_URL;
+  const envKey = import.meta.env.VITE_SUPABASE_KEY;
+
+  if (envUrl && envKey) {
+    // Extract project ID from URL if possible, otherwise just use URL
+    // Format: https://<project_id>.supabase.co
+    let projectId = '';
+    try {
+      const urlObj = new URL(envUrl);
+      const hostParts = urlObj.hostname.split('.');
+      if (hostParts.length > 0) {
+        projectId = hostParts[0];
+      }
+    } catch (e) {
+      // warning: invalid url format in env
+    }
+
+    return {
+      projectId: projectId, // specific ID might not be critical if we have URL
+      key: envKey,
+      url: envUrl
+    };
+  }
+
+  // No config found
   return {
-    projectId: 'vpgbccxkaroushvnqmgk',
-    key: 'sb_publishable_qTWiyF1apEYIIj4D62PFsQ_0siKhfau',
-    url: 'https://vpgbccxkaroushvnqmgk.supabase.co'
+    projectId: '',
+    key: '',
+    url: ''
   };
 };
 
