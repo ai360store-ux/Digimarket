@@ -26,7 +26,13 @@ This theme requires a **Supabase** backend to store your products and settings. 
    VITE_SUPABASE_KEY=your-anon-key-here
    ```
 
-### 3. Run the App
+### 3. Setup Database Tables
+1. Copy the contents of [`supabase_setup.sql`](supabase_setup.sql).
+2. Go to your Supabase Project Dashboard -> **SQL Editor**.
+3. Paste the code and click **Run**.
+   *This creates the necessary tables (`dm_products`, etc.) and configures permissions so your app can save data.*
+
+### 4. Run the App
 1. Install dependencies:
    `npm install`
 2. Run the development server:
