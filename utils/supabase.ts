@@ -14,12 +14,17 @@ const validateUrl = (url: string) => {
  * Retrieves the master vault credentials from permanent storage.
  * Now tries to fetch from Supabase cloud first, then falls back to localStorage.
  */
+/**
+ * Retrieves the master vault credentials.
+ * Prioritizes:
+ * 1. LocalStorage override (if admin changed it)
+ * 2. Hardcoded GLOBAL defaults (so the site works for everyone by default)
+ */
 export const getSupabaseConfig = () => {
   try {
     const saved = localStorage.getItem('dm_supabase_config');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure the URL is correctly constructed from the Project ID
       if (parsed.projectId && !parsed.url) {
         parsed.url = `https://${parsed.projectId}.supabase.co`;
       }
@@ -28,7 +33,14 @@ export const getSupabaseConfig = () => {
   } catch (e) {
     console.error("Critical Storage Retrieval Error:", e);
   }
-  return { url: '', key: '', projectId: '' };
+
+  // FALLBACK: Default Global Configuration (Hardwired)
+  // This ensures the site is ALWAYS linked for public visitors
+  return {
+    projectId: 'vpgbccxkaroushvnqmgk',
+    key: 'sb_publishable_qTWiyF1apEYIIj4D62PFsQ_0siKhfau',
+    url: 'https://vpgbccxkaroushvnqmgk.supabase.co'
+  };
 };
 
 /**

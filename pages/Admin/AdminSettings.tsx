@@ -146,9 +146,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ settings, setSettings, pr
               </div>
             </div>
 
-            <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all ${isCloudConnected() ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
-              <div className={`w-2.5 h-2.5 rounded-full ${isCloudConnected() ? 'bg-blue-500 animate-pulse' : 'bg-rose-500'}`}></div>
-              <span className="text-[11px] font-black uppercase tracking-widest italic">{isCloudConnected() ? 'System Linked' : 'System Offline'}</span>
+            <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all ${(cloudConfig.projectId && cloudConfig.key) ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${(cloudConfig.projectId && cloudConfig.key) ? 'bg-blue-500 animate-pulse' : 'bg-rose-500'}`}></div>
+              <span className="text-[11px] font-black uppercase tracking-widest italic">{(cloudConfig.projectId && cloudConfig.key) ? 'System Linked' : 'Keys Required'}</span>
             </div>
           </div>
 
@@ -165,6 +165,12 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ settings, setSettings, pr
                   />
                 </div>
                 <div className="md:col-span-2">
+                  <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 mb-6">
+                    <p className="text-[10px] font-medium text-blue-400 leading-relaxed">
+                      <strong className="block uppercase tracking-widest mb-1">Status: Globallly Linked</strong>
+                      Your website is now <strong>hardwired</strong> to your database. It will connect automatically on every device (mobile, desktop, tablet) without needing to enter keys again. Public visitors will see your live inventory immediately.
+                    </p>
+                  </div>
                   <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-4">Master Secret API Key</label>
                   <input
                     type="password"
