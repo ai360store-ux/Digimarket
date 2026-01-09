@@ -36,7 +36,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             </div>
           </Link>
         </div>
-        
+
         <nav className="flex-grow px-4 mt-4 space-y-1">
           {menuItems.map(item => {
             const isActive = location.pathname === item.path;
@@ -52,13 +52,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             );
           })}
         </nav>
-        
+
         <div className="p-6 mt-auto">
           <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200 mb-6">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Support Bridge</p>
             <p className="text-[11px] font-bold text-slate-900">Console v7.4.2</p>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-4 px-5 py-4 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider group"
           >
@@ -74,14 +74,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <div className="flex items-center gap-4">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <h2 className="font-black text-slate-900 text-[12px] uppercase tracking-[0.2em]">
-               {menuItems.find(item => item.path === location.pathname)?.label || 'Console Home'}
+              {menuItems.find(item => item.path === location.pathname)?.label || 'Console Home'}
             </h2>
           </div>
           <div className="flex items-center gap-6">
             <Link to="/" className="text-[10px] font-black text-blue-600 hover:bg-blue-600 hover:text-white uppercase tracking-widest flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-xl transition-all border border-blue-100">
-               <span className="text-sm">👁️</span>
-               View Storefront
+              <span className="text-sm">👁️</span>
+              View Storefront
             </Link>
+            <button
+              onClick={handleLogout}
+              className="text-[10px] font-black text-rose-500 hover:bg-rose-500 hover:text-white uppercase tracking-widest flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-xl transition-all border border-rose-100"
+            >
+              Sign Out
+            </button>
           </div>
         </header>
         <div className="flex-grow p-10 overflow-y-auto no-scrollbar">

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_SETTINGS } from './store/mockData.ts';
 import { Product, Category, AppSettings } from './types.ts';
-import { isCloudConnected, fetchFromCloud, saveToCloud } from './utils/supabase.ts';
+import { isCloudConnected, fetchFromCloud, saveToCloud, deleteFromCloud } from './utils/supabase.ts';
 
 import Home from './pages/Storefront/Home.tsx';
 import ProductDetail from './pages/Storefront/ProductDetail.tsx';
@@ -91,39 +91,44 @@ const App: React.FC = () => {
   }, []);
 
   // Background Sync Logic
-  useEffect(() => {
-    if (isLoading) return;
+  // No background sync anymore.
 
-    // REMOVED: Storage Writes
-    // We do NOT write to localStorage anymore.
-
+  const handleUpdateProduct = async (updated: Product) => {
     if (isCloudConnected()) {
-      const sync = async () => {
-        try {
-          await Promise.all([
-            ...products.map(p => saveToCloud('dm_products', p.id, p)),
-            ...categories.map(c => saveToCloud('dm_categories', c.id, c)),
-            saveToCloud('dm_settings', 'global-config', settings)
-          ]);
-        } catch (e) {
-          console.error("Auto-sync background error:", e);
-        }
-      };
-      // Debounce could be good here, but for now we stick to simple logic
-      const timeoutId = setTimeout(sync, 1000);
-      return () => clearTimeout(timeoutId);
+      try {
+        await saveToCloud('dm_products', updated.id, updated);
+      } catch (e) {
+        console.error("Save Failed:", e);
+        alert("CRITICAL ERROR: Could not save changes to database.");
+        return;
+      }
     }
-  }, [products, categories, settings, isLoading]);
-
-  const handleUpdateProduct = (updated: Product) => {
     setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
   };
 
-  const handleAddProduct = (newProduct: Product) => {
+  const handleAddProduct = async (newProduct: Product) => {
+    if (isCloudConnected()) {
+      try {
+        await saveToCloud('dm_products', newProduct.id, newProduct);
+      } catch (e) {
+        console.error("Save Failed:", e);
+        alert("CRITICAL ERROR: Could not save to database.");
+        return;
+      }
+    }
     setProducts(prev => [...prev, newProduct]);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
+    if (isCloudConnected()) {
+      try {
+        await deleteFromCloud('dm_products', id);
+      } catch (e) {
+        console.error("Delete Failed:", e);
+        alert("Could not delete from database.");
+        return;
+      }
+    }
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 

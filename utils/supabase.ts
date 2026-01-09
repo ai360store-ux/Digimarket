@@ -215,6 +215,19 @@ export const saveToCloud = async (table: string, id: string, data: any) => {
   }
 };
 
+export const deleteFromCloud = async (table: string, id: string) => {
+  const client = supabase();
+  if (!client) return null;
+  try {
+    const { error } = await client.from(table).delete().eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (e) {
+    console.error(`Global System Delete Error (${table}):`, e);
+    throw e;
+  }
+};
+
 export const fetchFromCloud = async (table: string) => {
   const client = supabase();
   if (!client) return { data: [], error: 'no-client' };

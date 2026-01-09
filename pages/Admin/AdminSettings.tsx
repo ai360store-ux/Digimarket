@@ -89,11 +89,15 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ settings, setSettings, pr
       // Pull latest repository data
       setSyncStatus({ active: true, message: 'Syncing Marketplace Inventory...' });
 
-      const [cloudP, cloudC, cloudS] = await Promise.all([
+      const [pRes, cRes, sRes] = await Promise.all([
         fetchFromCloud('dm_products'),
         fetchFromCloud('dm_categories'),
         fetchFromCloud('dm_settings')
       ]);
+
+      const cloudP = pRes.data;
+      const cloudC = cRes.data;
+      const cloudS = sRes.data;
 
       if (cloudP && cloudP.length > 0) setProducts(cloudP);
       if (cloudC && cloudC.length > 0) setCategories(cloudC);
@@ -283,6 +287,26 @@ ALTER TABLE dm_config DISABLE ROW LEVEL SECURITY;`}
               onChange={e => handleChange('establishedYear', e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="flex justify-end pt-6 border-t border-slate-50">
+          <button
+            onClick={async () => {
+              if (isCloudConnected()) {
+                try {
+                  await saveToCloud('dm_settings', 'global-config', settings);
+                  alert("System Identity Saved to Vault.");
+                } catch (e) {
+                  alert("Failed to save settings.");
+                }
+              } else {
+                alert("Not connected to Cloud Vault.");
+              }
+            }}
+            className="bg-slate-900 text-white font-black px-10 py-5 rounded-[24px] shadow-xl hover:bg-slate-800 transition-all active:scale-95 uppercase text-[12px] tracking-[0.3em] italic"
+          >
+            Save Identity
+          </button>
         </div>
       </section>
     </div>

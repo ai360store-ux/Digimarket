@@ -7,11 +7,36 @@ interface CategoriesProps {
   setCategories: (c: Category[]) => void;
 }
 
+import { isCloudConnected, saveToCloud, deleteFromCloud } from '../../utils/supabase';
+
+// Helper to persist categories
+const persistCategory = async (cat: Category) => {
+  if (isCloudConnected()) {
+    try {
+      await saveToCloud('dm_categories', cat.id, cat);
+    } catch (e) {
+      console.error("Category Save Failed", e);
+      alert("Failed to save category to cloud");
+    }
+  }
+};
+
+const deleteCategory = async (id: string) => {
+  if (isCloudConnected()) {
+    try {
+      await deleteFromCloud('dm_categories', id);
+    } catch (e) {
+      console.error("Category Delete Failed", e);
+      alert("Failed to delete category from cloud");
+    }
+  }
+};
+
 const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories }) => {
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('📦');
 
-  const addCategory = () => {
+  const addCategory = async () => {
     if (!newName) return;
     const newCat: Category = {
       id: Math.random().toString(36).substr(2, 9),
@@ -19,13 +44,19 @@ const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories 
       slug: newName.toLowerCase().replace(/\s+/g, '-'),
       icon: newIcon
     };
+
+    // Optimistic update
     setCategories([...categories, newCat]);
     setNewName('');
+
+    // Persist
+    await persistCategory(newCat);
   };
 
-  const removeCategory = (id: string) => {
+  const removeCategory = async (id: string) => {
     if (window.confirm('Delete this category? This might affect existing products.')) {
       setCategories(categories.filter(c => c.id !== id));
+      await deleteCategory(id);
     }
   };
 
@@ -34,13 +65,13 @@ const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories 
       <div className="lg:col-span-4 space-y-8">
         <div className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm space-y-10">
           <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic flex items-center gap-4">
-             <span className="w-6 h-1 bg-blue-600 rounded-full"></span>
-             New Sector
+            <span className="w-6 h-1 bg-blue-600 rounded-full"></span>
+            New Sector
           </h3>
           <div className="space-y-8">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Glyph</label>
-              <input 
+              <input
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-4xl text-center"
                 value={newIcon}
                 onChange={e => setNewIcon(e.target.value)}
@@ -48,14 +79,14 @@ const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories 
             </div>
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Name</label>
-              <input 
+              <input
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-slate-900 font-black italic tracking-tight uppercase"
                 placeholder="Subscriptions"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
               />
             </div>
-            <button 
+            <button
               onClick={addCategory}
               className="w-full bg-blue-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 uppercase text-[12px] tracking-widest italic"
             >
@@ -83,7 +114,7 @@ const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories 
                   <td className="px-8 py-6 font-black text-slate-900 text-[15px] uppercase tracking-tighter italic">{cat.name}</td>
                   <td className="px-8 py-6 text-[11px] font-bold text-slate-400 font-mono tracking-widest">{cat.slug}</td>
                   <td className="px-8 py-6 text-right">
-                    <button 
+                    <button
                       onClick={() => removeCategory(cat.id)}
                       className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
                     >
