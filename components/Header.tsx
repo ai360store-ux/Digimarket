@@ -1,15 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Category, Product, AppSettings } from '../types';
+import { useDigiContext } from '../context/DigiContext';
 
-interface HeaderProps {
-  categories: Category[];
-  products: Product[];
-  settings: AppSettings;
-}
-
-const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
+const Header: React.FC = () => {
+  const { categories, products, settings } = useDigiContext();
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
@@ -37,10 +32,10 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
   }, []);
 
   const suggestions = products
-    .filter(p => 
-      p.status === 'active' && 
-      (p.title.toLowerCase().includes(search.toLowerCase()) || 
-       p.category.toLowerCase().includes(search.toLowerCase()))
+    .filter(p =>
+      p.status === 'active' &&
+      (p.title.toLowerCase().includes(search.toLowerCase()) ||
+        p.category.toLowerCase().includes(search.toLowerCase()))
     )
     .slice(0, 5);
 
@@ -52,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
             <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-xl italic">V</div>
             <span className="text-slate-900 font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">{brandName}</span>
           </Link>
-          
+
           <div className="hidden lg:flex items-center gap-8">
             <Link to="/" className="text-[13px] font-bold text-slate-900 uppercase tracking-widest hover:text-blue-600 transition-colors">Vault</Link>
             <Link to="/search?q=best" className="text-[13px] font-bold text-slate-500 uppercase tracking-widest hover:text-blue-600 transition-colors">Bestsellers</Link>
@@ -62,9 +57,9 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
         <div className="flex items-center gap-6">
           <div className="relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative">
-              <input 
-                type="text" 
-                placeholder="Repository search..." 
+              <input
+                type="text"
+                placeholder="Repository search..."
                 className="h-10 md:h-11 w-40 sm:w-64 rounded-xl bg-slate-50 border border-slate-200 pl-10 pr-4 text-[14px] font-semibold text-slate-900 focus:outline-none focus:bg-white focus:ring-4 focus:ring-slate-100 transition-all"
                 value={search}
                 onFocus={() => setShowSuggestions(true)}
@@ -78,9 +73,9 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
             {showSuggestions && search.length >= 2 && (
               <div className="absolute top-full right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden py-3 z-[2000]">
                 {suggestions.map(s => (
-                  <Link 
-                    key={s.id} 
-                    to={`/product/${s.id}`} 
+                  <Link
+                    key={s.id}
+                    to={`/product/${s.id}`}
                     onClick={() => setShowSuggestions(false)}
                     className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 transition-colors group"
                   >
@@ -99,7 +94,7 @@ const Header: React.FC<HeaderProps> = ({ categories, products, settings }) => {
           </Link>
         </div>
       </nav>
-      
+
       {/* Category Bar - Slim */}
       <div className="max-w-[1500px] mx-auto px-4 md:px-8 h-10 overflow-x-auto no-scrollbar flex items-center gap-10 text-[11px] font-bold uppercase tracking-widest bg-white border-t border-slate-50">
         {(categories || []).map(cat => (

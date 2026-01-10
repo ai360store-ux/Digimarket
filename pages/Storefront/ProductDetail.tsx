@@ -1,251 +1,146 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
-import { Product, AppSettings, PriceOption } from '../../types.ts';
-import { formatDuration, generateWhatsAppUrl, calculateDiscount } from '../../utils/helpers.ts';
-import ProductCard from '../../components/ProductCard.tsx';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Subsection } from '../../types';
+import { useDigiContext } from '../../context/DigiContext';
 
-interface ProductDetailProps {
-  products: Product[];
-  settings: AppSettings;
-}
-
-const ProductDetail: React.FC<ProductDetailProps> = ({ products, settings }) => {
+const ProductDetail: React.FC = () => {
   const { id } = useParams();
+  const { products, settings } = useDigiContext();
+  const product = products.find(p => p.id === id);
 
-  const product = useMemo(() => {
-    if (!products || !id) return null;
-    return products.find(p => p.id === id) || null;
-  }, [products, id]);
-
-  const [activeSubIndex, setActiveSubIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<PriceOption | null>(null);
-  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [mainImage, setMainImage] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (product?.subsections?.[activeSubIndex]) {
-      const sub = product.subsections[activeSubIndex];
-      if (sub.options?.length > 0) {
-        setSelectedOption(sub.options[0]);
-      }
+    if (product) {
+      setMainImage(product.images[0]);
+      // Set defaults for options
+      const defaults: Record<string, string> = {};
+      product.subsections.forEach(sub => {
+        if (sub.options.length > 0) {
+          defaults[sub.id] = sub.options[0].id;
+        }
+      });
+      setSelectedOptions(defaults);
     }
-  }, [product, activeSubIndex]);
+  }, [product]);
 
-  if (!product) return <Navigate to="/" />;
+  if (!product) return (
+    <div className="py-20 text-center">
+      <h2 className="text-2xl font-black italic uppercase">Vault Item Not Found</h2>
+      <Link to="/" className="text-blue-600 font-bold mt-4 inline-block">Return to Catalog</Link>
+    </div>
+  );
 
-  const activeSub = product.subsections?.[activeSubIndex] || product.subsections?.[0];
-
-  if (!activeSub || !selectedOption) return null;
-
-  const handleBuy = () => {
-    setIsPurchasing(true);
-
-    const durationStr = formatDuration(selectedOption.type, selectedOption.presetValue, selectedOption.expiryDate);
-    const orderId = `V-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-    const url = generateWhatsAppUrl(
-      settings.whatsappNumber,
-      product.title,
-      `${activeSub.name} - ${selectedOption.name}`,
-      durationStr,
-      selectedOption.price,
-      selectedOption.mrp,
-      orderId,
-      settings.currencySymbol,
-      selectedOption.taxPercent || 0
-    );
-
-    // Simulate purchase animation
-    setTimeout(() => {
-      window.open(url, '_blank');
-      setIsPurchasing(false);
-    }, 600);
+  // Calculate price based on selected options
+  const calculateTotal = () => {
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([subId, optId]) => {
+      const sub = product.subsections.find(s => s.id === subId);
+      const opt = sub?.options.find(o => o.id === optId);
+      if (opt) total += opt.price;
+    });
+    return total;
   };
 
-  const isSoldOut = product.inventory === 0;
-  const recommendations = products
-    .filter(p => p.id !== product.id && p.status === 'active' && p.category === product.category)
-    .slice(0, 5);
-
-  const discountPercent = calculateDiscount(selectedOption.mrp, selectedOption.price);
-
   return (
-    <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-6 bg-white">
+    <div className="space-y-20">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
 
-      {/* Compact Breadcrumb */}
-      <div className="flex items-center gap-2 mb-6 text-[9px] font-bold uppercase tracking-wider text-slate-400">
-        <Link to="/" className="text-blue-600 hover:text-slate-900 transition-colors">Home</Link>
-        <span>/</span>
-        <span className="text-slate-900">{product.category}</span>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-
-        {/* Product Image - Compact */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="aspect-square bg-[#F8F9FB] rounded-3xl overflow-hidden border border-slate-100 shadow-sm relative group">
-            <img
-              src={product.images[0]}
-              alt={product.title}
-              className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${isSoldOut ? 'grayscale opacity-50' : ''}`}
-            />
-            {discountPercent > 0 && (
-              <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-xl shadow-lg">
-                <p className="text-xs font-black uppercase tracking-wide">{discountPercent}% OFF</p>
-              </div>
-            )}
-          </div>
-
-          {/* Trust Badges - Compact */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-              <div className="text-xl mb-1">✓</div>
-              <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">Authentic</p>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-              <div className="text-xl mb-1">⚡</div>
-              <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">Instant</p>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
-              <div className="text-xl mb-1">🔒</div>
-              <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">Secure</p>
+        {/* Gallery */}
+        <div className="lg:col-span-7 space-y-10">
+          <div className="aspect-[4/3] rounded-[3.5rem] overflow-hidden bg-slate-100 border border-slate-200 group shadow-2xl relative">
+            <img src={mainImage} alt={product.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+            <div className="absolute top-10 left-10 flex gap-4">
+              {product.isTrending && <span className="bg-rose-600 text-white text-[10px] font-black px-4 py-2 rounded-xl italic uppercase tracking-widest shadow-xl">Trending 🔥</span>}
+              {product.isStaffPick && <span className="bg-blue-600 text-white text-[10px] font-black px-4 py-2 rounded-xl italic uppercase tracking-widest shadow-xl">Staff Pick 👑</span>}
             </div>
           </div>
-
-          {/* Product Description - Compact */}
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] italic flex items-center gap-2">
-              <span className="w-3 h-[2px] bg-blue-600"></span>
-              Details
-            </h3>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {product.fullDescription}
-            </p>
-          </div>
-        </div>
-
-        {/* Product Info - Reorganized */}
-        <div className="lg:col-span-7 space-y-6">
-
-          {/* Edition & Tenure Selectors - MOVED TO TOP */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Edition Selector */}
-            <div className="space-y-3">
-              <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em]">Edition</h4>
-              <div className="flex flex-wrap gap-2">
-                {product.subsections.map((sub, idx) => (
-                  <button
-                    key={sub.id}
-                    onClick={() => setActiveSubIndex(idx)}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border-2 ${activeSubIndex === idx ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
-                  >
-                    {sub.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Tenure Selector */}
-            <div className="space-y-3">
-              <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em]">Duration</h4>
-              <div className="flex flex-wrap gap-2">
-                {activeSub.options.map(opt => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setSelectedOption(opt)}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border-2 ${selectedOption.id === opt.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`}
-                  >
-                    {opt.presetValue}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Product Name - SMALLER & MOVED BELOW OPTIONS */}
-          <div className="space-y-2 border-t border-slate-100 pt-6">
-            <div className="flex items-center gap-2">
-              <span className="bg-slate-900 text-white text-[8px] font-black px-2 py-1 rounded uppercase tracking-wider">Verified</span>
-              <span className="text-slate-300 text-[8px] font-bold uppercase tracking-wider">ID: {product.id.split('-').pop()}</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight uppercase leading-tight">
-              {product.title}
-            </h1>
-            <p className="text-xs text-slate-500 font-medium">{activeSub.name} - {selectedOption.name}</p>
-          </div>
-
-          {/* Optimized Pricing Card */}
-          <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-6 border-2 border-slate-200 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              {/* Price Info */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-slate-900 font-black text-4xl tracking-tight">
-                    {settings.currencySymbol}{selectedOption.price.toLocaleString()}
-                  </span>
-                  {discountPercent > 0 && (
-                    <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-lg text-xs font-black uppercase">
-                      Save {discountPercent}%
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 line-through text-sm font-semibold">
-                    MRP {settings.currencySymbol}{selectedOption.mrp.toLocaleString()}
-                  </span>
-                  {selectedOption.taxPercent && (
-                    <span className="text-slate-400 text-xs">· Incl. {selectedOption.taxPercent}% tax</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Buy Button - Changed to "Buy Now" */}
+          <div className="grid grid-cols-4 gap-6">
+            {product.images.map((img, i) => (
               <button
-                disabled={isSoldOut || isPurchasing}
-                onClick={handleBuy}
-                className={`group relative px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-black rounded-xl uppercase tracking-wide transition-all duration-300 text-base shadow-lg overflow-hidden ${isSoldOut ? 'opacity-30 cursor-not-allowed' : isPurchasing ? 'scale-95' : 'hover:scale-105 hover:shadow-xl'}`}
+                key={i}
+                onClick={() => setMainImage(img)}
+                className={`aspect-square rounded-3xl overflow-hidden border-2 transition-all shadow-lg ${mainImage === img ? 'border-blue-600 scale-95 shadow-blue-200' : 'border-slate-100 hover:border-slate-300 opacity-60 hover:opacity-100'}`}
               >
-                {/* Button Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {isPurchasing ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Processing...
-                    </>
-                  ) : isSoldOut ? (
-                    'Sold Out'
-                  ) : (
-                    <>
-                      Buy Now
-                    </>
-                  )}
-                </span>
+                <img src={img} alt="" className="w-full h-full object-cover" />
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Purchase Info */}
+        <div className="lg:col-span-5 space-y-12">
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 text-[11px] font-black text-blue-600 uppercase tracking-widest italic">
+              <span>{product.category}</span>
+              <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+              <span>Inventory ID: {product.id}</span>
+            </div>
+            <h1 className="text-5xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">{product.title}</h1>
+            <p className="text-slate-400 text-lg font-medium leading-relaxed italic">{product.shortDescription}</p>
+          </div>
+
+          <div className="space-y-10">
+            {product.subsections.map(sub => (
+              <div key={sub.id} className="space-y-6">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{sub.name}</label>
+                <div className="grid grid-cols-1 gap-4">
+                  {sub.options.map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setSelectedOptions(prev => ({ ...prev, [sub.id]: opt.id }))}
+                      className={`flex items-center justify-between p-6 rounded-3xl border-2 transition-all text-left ${selectedOptions[sub.id] === opt.id ? 'border-blue-600 bg-blue-50/50 shadow-xl shadow-blue-100/50' : 'border-slate-100 hover:border-slate-200'}`}
+                    >
+                      <div className="space-y-1">
+                        <span className={`text-[13px] font-black uppercase italic tracking-tight ${selectedOptions[sub.id] === opt.id ? 'text-blue-600' : 'text-slate-900'}`}>{opt.name}</span>
+                        {opt.type === 'preset' && <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{opt.presetValue}</p>}
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-black text-slate-900 italic tracking-tighter">{settings.currencySymbol}{opt.price}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-10 border-t border-slate-100 space-y-10">
+            <div className="flex items-end justify-between">
+              <div className="space-y-2">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Subtotal Investment</span>
+                <div className="text-5xl font-black text-slate-900 italic tracking-tighter">
+                  {settings.currencySymbol}{calculateTotal()}
+                </div>
+              </div>
+              <div className="text-[11px] font-black text-blue-600 uppercase tracking-widest italic bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100">
+                Ready to Provision
+              </div>
             </div>
 
-            {/* Security Badge */}
-            {!isSoldOut && (
-              <div className="flex items-center justify-center gap-2 text-slate-400 text-[9px] font-bold uppercase tracking-wider border-t border-slate-200 mt-4 pt-4">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                </svg>
-                <span>Encrypted & Secure Checkout</span>
-              </div>
-            )}
+            <button className="w-full bg-slate-900 text-white font-black py-8 rounded-[2.5rem] shadow-2xl shadow-slate-400 hover:bg-black transition-all active:scale-95 uppercase text-[15px] tracking-[0.4em] italic group relative overflow-hidden">
+              <span className="relative z-10">Acquire Permanent Rights</span>
+              <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Related Products */}
-      {recommendations.length > 0 && (
-        <div className="mt-20 pt-12 border-t border-slate-100">
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-8">You May Also Like</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-            {recommendations.map(p => <ProductCard key={p.id} product={p} currency={settings.currencySymbol} />)}
+      {/* Description */}
+      <section className="bg-white p-16 rounded-[4rem] border border-slate-100 shadow-sm space-y-12">
+        <div className="flex items-center gap-6">
+          <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center text-3xl border border-slate-100 shadow-inner">📄</div>
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic">Technical Specification</h3>
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Full documentation and requirements</p>
           </div>
         </div>
-      )}
+        <div className="prose prose-slate max-w-none">
+          <p className="text-slate-600 text-lg leading-relaxed whitespace-pre-wrap italic font-medium">{product.fullDescription}</p>
+        </div>
+      </section>
     </div>
   );
 };

@@ -1,42 +1,14 @@
 
 import React, { useState } from 'react';
+import { useDigiContext } from '../../context/DigiContext';
 import { Category } from '../../types';
 
-interface CategoriesProps {
-  categories: Category[];
-  setCategories: (c: Category[]) => void;
-}
-
-import { isCloudConnected, saveToCloud, deleteFromCloud } from '../../utils/supabase';
-
-// Helper to persist categories
-const persistCategory = async (cat: Category) => {
-  if (isCloudConnected()) {
-    try {
-      await saveToCloud('dm_categories', cat.id, cat);
-    } catch (e) {
-      console.error("Category Save Failed", e);
-      alert("Failed to save category to cloud");
-    }
-  }
-};
-
-const deleteCategory = async (id: string) => {
-  if (isCloudConnected()) {
-    try {
-      await deleteFromCloud('dm_categories', id);
-    } catch (e) {
-      console.error("Category Delete Failed", e);
-      alert("Failed to delete category from cloud");
-    }
-  }
-};
-
-const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories }) => {
+const AdminCategories: React.FC = () => {
+  const { categories, addCategory, deleteCategory } = useDigiContext();
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('📦');
 
-  const addCategory = async () => {
+  const handleAdd = async () => {
     if (!newName) return;
     const newCat: Category = {
       id: Math.random().toString(36).substr(2, 9),
@@ -45,17 +17,12 @@ const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories 
       icon: newIcon
     };
 
-    // Optimistic update
-    setCategories([...categories, newCat]);
+    await addCategory(newCat);
     setNewName('');
-
-    // Persist
-    await persistCategory(newCat);
   };
 
-  const removeCategory = async (id: string) => {
-    if (window.confirm('Delete this category? This might affect existing products.')) {
-      setCategories(categories.filter(c => c.id !== id));
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Erase this sector? Existing node linkages may be affected.')) {
       await deleteCategory(id);
     }
   };
@@ -87,46 +54,46 @@ const AdminCategories: React.FC<CategoriesProps> = ({ categories, setCategories 
               />
             </div>
             <button
-              onClick={addCategory}
+              onClick={handleAdd}
               className="w-full bg-blue-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 uppercase text-[12px] tracking-widest italic"
             >
-              Add Sector
+              Protect & Add
             </button>
           </div>
         </div>
       </div>
 
-      <div className="lg:col-span-8 bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto no-scrollbar">
-          <table className="w-full text-left border-separate border-spacing-0">
-            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-slate-200">
-              <tr>
-                <th className="px-8 py-6">Glyph</th>
-                <th className="px-8 py-6">Name</th>
-                <th className="px-8 py-6">Slug</th>
-                <th className="px-8 py-6 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {categories.map(cat => (
-                <tr key={cat.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-8 py-6 text-4xl group-hover:scale-110 transition-transform">{cat.icon}</td>
-                  <td className="px-8 py-6 font-black text-slate-900 text-[15px] uppercase tracking-tighter italic">{cat.name}</td>
-                  <td className="px-8 py-6 text-[11px] font-bold text-slate-400 font-mono tracking-widest">{cat.slug}</td>
-                  <td className="px-8 py-6 text-right">
-                    <button
-                      onClick={() => removeCategory(cat.id)}
-                      className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
-                    >
-                      🗑️
-                    </button>
-                  </td>
+      <tbody className="divide-y divide-slate-100">
+        <div className="lg:col-span-8 bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left border-separate border-spacing-0">
+              <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-slate-200">
+                <tr>
+                  <th className="px-8 py-6">Glyph</th>
+                  <th className="px-8 py-6">Name</th>
+                  <th className="px-8 py-6 text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {categories.map(cat => (
+                  <tr key={cat.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-8 py-6 text-4xl group-hover:scale-110 transition-transform">{cat.icon}</td>
+                    <td className="px-8 py-6 font-black text-slate-900 text-[15px] uppercase tracking-tighter italic">{cat.name}</td>
+                    <td className="px-8 py-6 text-right">
+                      <button
+                        onClick={() => handleDelete(cat.id)}
+                        className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </tbody>
     </div>
   );
 };

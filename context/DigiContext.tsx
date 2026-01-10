@@ -2,7 +2,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Category, AppSettings } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_SETTINGS } from '../store/mockData';
-import { fetchFromCloud, saveToCloud, deleteFromCloud, isCloudConnected } from '../utils/supabase';
+import {
+    isCloudConnected, fetchFromCloud, saveToCloud, deleteFromCloud, initSupabase
+} from '../utils/supabase';
 
 interface DigiContextType {
     products: Product[];
@@ -14,6 +16,8 @@ interface DigiContextType {
     updateProduct: (product: Product) => Promise<void>;
     addProduct: (product: Product) => Promise<void>;
     deleteProduct: (id: string) => Promise<void>;
+    addCategory: (category: Category) => Promise<void>;
+    deleteCategory: (id: string) => Promise<void>;
     updateSettings: (settings: AppSettings) => Promise<void>;
     login: () => void;
     logout: () => void;
@@ -29,82 +33,115 @@ export const DigiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isLoading, setIsLoading] = useState(true);
 
     const refreshData = async () => {
-        setIsLoading(true);
+        if (!isCloudConnected()) {
+            setProducts(INITIAL_PRODUCTS);
+            setCategories(INITIAL_CATEGORIES);
+            setIsLoading(false);
+            return;
+        }
+
         try {
-            if (isCloudConnected()) {
-                const [p, c, s] = await Promise.all([
-                    fetchFromCloud('dm_products'),
-                    fetchFromCloud('dm_categories'),
-                    fetchFromCloud('dm_settings')
-                ]);
+            const [p, c, s] = await Promise.all([
+                fetchFromCloud('dm_products'),
+                fetchFromCloud('dm_categories'),
+                fetchFromCloud('dm_settings')
+            ]);
 
-                // Supabase returns { data, error }. If error is missing-table, we might want to alert, but here we just fallback/empty.
-                // Important: If data is empty array, it means empty DB.
-
-                setProducts(p?.data?.length ? p.data : (p?.error ? INITIAL_PRODUCTS : []));
-                setCategories(c?.data?.length ? c.data : (c?.error ? INITIAL_CATEGORIES : []));
-                setSettings(s?.data?.length ? s.data[0] : INITIAL_SETTINGS);
-            } else {
-                // Fallback to mock if no connection (or local dev mode)
-                console.warn("No Supabase connection.");
-                setProducts(INITIAL_PRODUCTS);
-                setCategories(INITIAL_CATEGORIES);
-                setSettings(INITIAL_SETTINGS);
-            }
+            setProducts(p.data?.length ? p.data : INITIAL_PRODUCTS);
+            setCategories(c.data?.length ? c.data : INITIAL_CATEGORIES);
+            if (s.data?.length) setSettings(s.data[0]);
         } catch (e) {
-            console.error("Context Refresh Failed", e);
+            console.error("Fetch failed", e);
+            // Fallback to defaults on total failure
+            setProducts(INITIAL_PRODUCTS);
+            setCategories(INITIAL_CATEGORIES);
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
+        initSupabase();
         refreshData();
     }, []);
 
-    const login = () => {
-        localStorage.setItem('dm_admin_auth', 'true');
-        setIsAdmin(true);
-    };
-
-    const logout = () => {
-        localStorage.removeItem('dm_admin_auth');
-        setIsAdmin(false);
-    };
+    // --- Actions ---
 
     const updateProduct = async (product: Product) => {
-        // Optimistic Update
         setProducts(prev => prev.map(p => p.id === product.id ? product : p));
-        if (isCloudConnected()) {
+        try {
             await saveToCloud('dm_products', product.id, product);
+            alert("✓ Success: Product updated in database.");
+        } catch (e: any) {
+            alert("❌ Sync Error: " + e.message);
         }
     };
 
     const addProduct = async (product: Product) => {
         setProducts(prev => [...prev, product]);
-        if (isCloudConnected()) {
+        try {
             await saveToCloud('dm_products', product.id, product);
+            alert("✓ Success: New product added to database.");
+        } catch (e: any) {
+            alert("❌ Sync Error: " + e.message);
         }
     };
 
     const deleteProduct = async (id: string) => {
         setProducts(prev => prev.filter(p => p.id !== id));
-        if (isCloudConnected()) {
+        try {
             await deleteFromCloud('dm_products', id);
+            alert("✓ Success: Product removed from database.");
+        } catch (e: any) {
+            alert("❌ Sync Error: " + e.message);
+        }
+    };
+
+    const addCategory = async (category: Category) => {
+        setCategories(prev => [...prev, category]);
+        try {
+            await saveToCloud('dm_categories', category.id, category);
+            alert("✓ Success: Category added to database.");
+        } catch (e: any) {
+            alert("❌ Sync Error: " + e.message);
+        }
+    };
+
+    const deleteCategory = async (id: string) => {
+        setCategories(prev => prev.filter(c => c.id !== id));
+        try {
+            await deleteFromCloud('dm_categories', id);
+            alert("✓ Success: Category removed from database.");
+        } catch (e: any) {
+            alert("❌ Sync Error: " + e.message);
         }
     };
 
     const updateSettings = async (newSettings: AppSettings) => {
         setSettings(newSettings);
-        if (isCloudConnected()) {
-            await saveToCloud('dm_settings', 'global-settings', newSettings);
+        try {
+            await saveToCloud('dm_settings', 'global-config', newSettings);
+            alert("✓ Success: Global settings saved to database.");
+        } catch (e: any) {
+            alert("❌ Sync Error: " + e.message);
         }
+    };
+
+    const login = () => {
+        setIsAdmin(true);
+        localStorage.setItem('dm_admin_auth', 'true');
+    };
+
+    const logout = () => {
+        setIsAdmin(false);
+        localStorage.removeItem('dm_admin_auth');
     };
 
     return (
         <DigiContext.Provider value={{
             products, categories, settings, isAdmin, isLoading,
-            refreshData, updateProduct, addProduct, deleteProduct, updateSettings,
+            refreshData, updateProduct, addProduct, deleteProduct,
+            addCategory, deleteCategory, updateSettings,
             login, logout
         }}>
             {children}

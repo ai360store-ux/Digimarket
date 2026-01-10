@@ -76,7 +76,6 @@ const AdminProductForm: React.FC = () => {
     setFormData(prev => ({ ...prev, images: prev.images?.filter((_, i) => i !== index) }));
   };
 
-  // ... (Subsection Logic kept same for design preservation) ...
   const addSubsection = () => {
     const newSub: Subsection = {
       id: 'sub-' + Math.random().toString(36).substr(2, 5),
@@ -148,8 +147,10 @@ const AdminProductForm: React.FC = () => {
     e.preventDefault();
     setSaveStatus('Saving...');
 
-    // Validate
-    if (!formData.title) return alert("Title is required");
+    if (!formData.title) {
+      setSaveStatus('');
+      return alert("Title is required");
+    }
 
     const finalProduct: Product = {
       ...(formData as Product),
@@ -166,11 +167,10 @@ const AdminProductForm: React.FC = () => {
         await addProduct(finalProduct);
       }
       setSaveStatus('Saved!');
-      setTimeout(() => navigate('/admin/products'), 500);
+      setTimeout(() => navigate('/admin/products'), 1500);
     } catch (e: any) {
       console.error(e);
-      setSaveStatus('Error saving');
-      alert("Save operation failed: " + e.message);
+      setSaveStatus('Error');
     }
   };
 
@@ -230,12 +230,11 @@ const AdminProductForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Search Tags</label>
-              <input
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 outline-none transition-all font-bold text-slate-600 text-[14px] italic"
-                placeholder="action, multiplayer, license, exclusive"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Description</label>
+              <textarea
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 outline-none transition-all font-bold text-slate-600 text-[14px] italic h-32"
+                value={formData.shortDescription}
+                onChange={e => setFormData({ ...formData, shortDescription: e.target.value })}
               />
             </div>
           </div>
@@ -243,11 +242,8 @@ const AdminProductForm: React.FC = () => {
 
         <section className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm space-y-10">
           <div className="flex items-center justify-between border-b border-slate-100 pb-6">
-            <div className="flex items-center gap-4">
-              <span className="text-2xl">💰</span>
-              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic">Pricing Configurations</h3>
-            </div>
-            <button type="button" onClick={addSubsection} className="text-[10px] font-black text-blue-600 hover:bg-blue-600 hover:text-white uppercase tracking-widest bg-blue-50 px-6 py-3 rounded-xl transition-all border border-blue-100">
+            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic">Pricing Configurations</h3>
+            <button type="button" onClick={addSubsection} className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-6 py-3 rounded-xl border border-blue-100 italic">
               + Add Group
             </button>
           </div>
@@ -257,12 +253,12 @@ const AdminProductForm: React.FC = () => {
               <div key={sub.id} className="p-8 bg-slate-50 rounded-[32px] border border-slate-200 space-y-8">
                 <div className="flex items-center justify-between gap-6">
                   <input
-                    className="bg-transparent text-xl font-black uppercase text-slate-900 focus:outline-none border-b border-slate-200 focus:border-blue-600 w-full pb-2 italic tracking-tight"
+                    className="bg-transparent text-xl font-black uppercase text-slate-900 focus:outline-none border-b border-slate-200 w-full pb-2 italic tracking-tight"
                     value={sub.name}
                     onChange={e => updateSubsectionName(sub.id, e.target.value)}
                   />
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => addOption(sub.id)} className="shrink-0 bg-blue-600 text-[10px] font-black uppercase text-white px-5 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-all">
+                    <button type="button" onClick={() => addOption(sub.id)} className="shrink-0 bg-blue-600 text-[10px] font-black uppercase text-white px-5 py-3 rounded-xl shadow-md italic">
                       Add Option
                     </button>
                     <button type="button" onClick={() => removeSubsection(sub.id)} className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100">
@@ -277,7 +273,7 @@ const AdminProductForm: React.FC = () => {
                       <div className="md:col-span-4">
                         <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Option Name</label>
                         <input
-                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-50 outline-none"
+                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
                           value={opt.name}
                           onChange={e => updateOption(sub.id, opt.id, { name: e.target.value })}
                         />
@@ -286,31 +282,22 @@ const AdminProductForm: React.FC = () => {
                         <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">MRP</label>
                         <input
                           type="number"
-                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-50 outline-none"
+                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
                           value={opt.mrp}
                           onChange={e => updateOption(sub.id, opt.id, { mrp: Number(e.target.value) })}
                         />
                       </div>
-                      <div className="md:col-span-2">
+                      <div className="md:col-span-3">
                         <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Sale Price</label>
                         <input
                           type="number"
-                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-50 outline-none"
+                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900"
                           value={opt.price}
                           onChange={e => updateOption(sub.id, opt.id, { price: Number(e.target.value) })}
                         />
                       </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tax (%)</label>
-                        <input
-                          type="number"
-                          className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-50 outline-none"
-                          value={opt.taxPercent}
-                          onChange={e => updateOption(sub.id, opt.id, { taxPercent: Number(e.target.value) })}
-                        />
-                      </div>
-                      <div className="md:col-span-2 text-center pb-2">
-                        <button type="button" onClick={() => removeOption(sub.id, opt.id)} className="p-3 text-slate-300 hover:text-rose-600 transition-colors">🗑️</button>
+                      <div className="md:col-span-3 text-right">
+                        <button type="button" onClick={() => removeOption(sub.id, opt.id)} className="text-rose-600 font-black text-[10px] uppercase tracking-widest hover:underline italic">Remove</button>
                       </div>
                     </div>
                   ))}
@@ -324,31 +311,24 @@ const AdminProductForm: React.FC = () => {
       {/* Right Column */}
       <div className="lg:col-span-5 space-y-10">
         <section className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm space-y-8">
-          <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
-            <span className="text-2xl">🖼️</span>
-            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic">Gallery</h3>
-          </div>
+          <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic border-b border-slate-100 pb-6">Gallery Asset</h3>
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               {formData.images?.map((img, i) => (
-                <div key={i} className="relative aspect-square rounded-[24px] overflow-hidden group shadow-md border border-slate-200">
-                  <img src={img} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                <div key={i} className="relative aspect-square rounded-[24px] overflow-hidden group border border-slate-200">
+                  <img src={img} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(i)}
-                    className="absolute inset-0 bg-rose-600/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white font-black uppercase text-[10px] tracking-widest"
+                    className="absolute inset-0 bg-rose-600/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white font-black uppercase text-[10px] tracking-widest italic"
                   >
-                    Delete
+                    Erase
                   </button>
                 </div>
               ))}
-              <label className={`aspect-square rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 hover:border-blue-600 transition-all group p-4 text-center ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                <span className="text-3xl mb-4 group-hover:scale-110 transition-transform">
-                  {isUploading ? '⏳' : '📤'}
-                </span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">
-                  {isUploading ? 'Uploading...' : 'Upload Asset'}
-                </span>
+              <label className={`aspect-square rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-all ${isUploading ? 'opacity-50' : ''}`}>
+                <span className="text-3xl mb-2">{isUploading ? '⏳' : '📤'}</span>
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Upload Asset</span>
                 <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
               </label>
             </div>
@@ -356,26 +336,23 @@ const AdminProductForm: React.FC = () => {
         </section>
 
         <section className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm space-y-8">
-          <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
-            <span className="text-2xl">⚡</span>
-            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic">Badges</h3>
-          </div>
+          <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter italic border-b border-slate-100 pb-6">Attributes</h3>
           <div className="grid grid-cols-1 gap-4">
             {[
-              { field: 'isTrending', label: 'Trending', icon: '🔥' },
-              { field: 'isBestseller', label: 'Bestseller', icon: '🏆' },
-              { field: 'isNew', label: 'New Arrival', icon: '✨' },
-              { field: 'isStaffPick', label: 'Recommended', icon: '👑' },
+              { field: 'isTrending', label: 'Trending Node', icon: '🔥' },
+              { field: 'isBestseller', label: 'Premium Asset', icon: '🏆' },
+              { field: 'isNew', label: 'Recent Deployment', icon: '✨' },
+              { field: 'isStaffPick', label: 'Admin Recommended', icon: '👑' },
             ].map(item => (
               <button
                 key={item.field}
                 type="button"
                 onClick={() => setFormData({ ...formData, [item.field]: !formData[item.field as keyof Product] })}
-                className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${formData[item.field as keyof Product] ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'}`}
+                className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${formData[item.field as keyof Product] ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30' : 'bg-slate-50 border-slate-200 text-slate-500'}`}
               >
                 <div className="flex items-center gap-4">
                   <span className="text-xl">{item.icon}</span>
-                  <span className="text-[11px] font-black uppercase tracking-widest">{item.label}</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest italic">{item.label}</span>
                 </div>
                 <div className={`w-4 h-4 rounded-full border-2 ${formData[item.field as keyof Product] ? 'bg-white border-white' : 'border-slate-300'}`}></div>
               </button>
@@ -386,9 +363,9 @@ const AdminProductForm: React.FC = () => {
         <button
           disabled={saveStatus === 'Saving...'}
           type="submit"
-          className={`w-full bg-blue-600 text-white font-black px-10 py-6 rounded-[32px] shadow-2xl shadow-blue-600/30 hover:bg-blue-700 transition-all active:scale-95 uppercase text-[14px] tracking-[0.4em] italic ${saveStatus === 'Saving...' ? 'opacity-50 cursor-wait' : ''}`}
+          className="w-full bg-slate-900 text-white font-black px-10 py-6 rounded-[32px] shadow-2xl hover:bg-blue-600 transition-all active:scale-95 uppercase text-[15px] tracking-[0.4em] italic"
         >
-          {saveStatus || 'Save Changes'}
+          {saveStatus || 'Secure & Save Node'}
         </button>
       </div>
     </form>

@@ -1,107 +1,99 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '../../types';
+import { useDigiContext } from '../../context/DigiContext';
 
-interface ProductListProps {
-  products: Product[];
-  onDelete: (id: string) => void;
-}
-
-const AdminProductList: React.FC<ProductListProps> = ({ products, onDelete }) => {
+const AdminProductList: React.FC = () => {
+  const { products, deleteProduct, settings } = useDigiContext();
   const [search, setSearch] = useState('');
 
   const filtered = products.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
 
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Erase this data node permanently from the vault?')) {
+      await deleteProduct(id);
+    }
+  };
+
   return (
     <div className="space-y-10">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
-        <div className="relative w-full md:w-[400px]">
-          <input 
-            type="text"
-            placeholder="Search catalog inventory..."
-            className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-6 py-4 text-[13px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-slate-400"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl opacity-20">🔍</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+        <div className="flex items-center gap-6">
+          <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl border border-blue-100">📦</div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Asset Inventory</h3>
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Management Console</p>
+          </div>
         </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <Link 
-            to="/admin/products/add"
-            className="flex-grow md:flex-none bg-blue-600 text-white font-black px-8 py-4 rounded-2xl text-[12px] uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 text-center italic"
-          >
-            + New Entry
+
+        <div className="flex flex-col sm:flex-row items-stretch gap-4">
+          <div className="relative">
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">🔍</span>
+            <input
+              className="bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-6 py-4 outline-none focus:ring-4 focus:ring-blue-50 transition-all font-bold text-slate-600 text-[13px] w-full sm:w-64"
+              placeholder="Filter catalog..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <Link to="/admin/products/add" className="bg-slate-900 text-white font-black px-8 py-4 rounded-2xl shadow-xl hover:bg-blue-600 transition-all active:scale-95 uppercase text-[11px] tracking-widest italic flex items-center justify-center gap-3">
+            <span>+</span> Deploy New Asset
           </Link>
         </div>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-separate border-spacing-0">
             <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] border-b border-slate-200">
               <tr>
-                <th className="px-8 py-6">Identity & Details</th>
-                <th className="px-8 py-6">Sector</th>
-                <th className="px-8 py-6">Stock Level</th>
-                <th className="px-8 py-6">Indicators</th>
-                <th className="px-8 py-6 text-right">Management</th>
+                <th className="px-10 py-8">Asset Matrix</th>
+                <th className="px-10 py-8">Sector</th>
+                <th className="px-10 py-8">Market Price</th>
+                <th className="px-10 py-8">Deployment Status</th>
+                <th className="px-10 py-8 text-right">Console</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map(p => (
-                <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-8 py-6">
+                <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-10 py-8">
                     <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[20px] bg-white p-1 shadow-sm border border-slate-200 shrink-0 group-hover:scale-105 transition-transform">
-                        <img src={p.images[0]} alt="" className="w-full h-full object-contain" />
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-md group-hover:scale-110 transition-transform border border-white">
+                        <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
                       </div>
-                      <div className="overflow-hidden">
-                        <p className="font-black text-slate-900 text-[14px] uppercase tracking-tight italic line-clamp-1">{p.title}</p>
-                        <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest italic truncate">{p.shortDescription}</p>
+                      <div className="space-y-1">
+                        <h4 className="font-black text-slate-900 uppercase tracking-tighter italic text-[15px]">{p.title}</h4>
+                        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em] font-mono">NODE_UID: {p.id}</span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">{p.category}</span>
+                  <td className="px-10 py-8">
+                    <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-4 py-2 rounded-xl italic uppercase tracking-widest border border-slate-200">{p.category}</span>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className={`text-[11px] font-black uppercase tracking-widest ${p.inventory === 0 ? 'text-rose-600' : p.inventory <= 5 ? 'text-amber-600' : 'text-slate-900'}`}>
-                        {p.inventory === 0 ? 'Out of Stock' : `${p.inventory} Units`}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">{p.status}</span>
+                  <td className="px-10 py-8">
+                    <div className="text-xl font-black text-slate-900 italic tracking-tighter leading-none">{settings.currencySymbol}{p.subsections[0]?.options[0]?.price || 0}</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Base Valuation</div>
+                  </td>
+                  <td className="px-10 py-8">
+                    <div className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-xl border ${p.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${p.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
+                      <span className="text-[10px] font-black uppercase tracking-widest italic">{p.status}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className="flex flex-wrap gap-2">
-                      {p.isTrending && <span className="text-[8px] font-black bg-rose-50 text-rose-500 border border-rose-100 px-2.5 py-1 rounded-lg uppercase tracking-widest">Hot</span>}
-                      {p.isBestseller && <span className="text-[8px] font-black bg-amber-50 text-amber-500 border border-amber-100 px-2.5 py-1 rounded-lg uppercase tracking-widest">Top</span>}
-                      {p.isNew && <span className="text-[8px] font-black bg-emerald-50 text-emerald-600 border border-emerald-100 px-2.5 py-1 rounded-lg uppercase tracking-widest">New</span>}
-                      {p.tags.slice(0, 2).map((tag, i) => (
-                        <span key={i} className="text-[8px] font-black bg-slate-50 text-slate-400 border border-slate-200 px-2.5 py-1 rounded-lg uppercase tracking-widest">{tag}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-4">
-                      <Link 
+                  <td className="px-10 py-8 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
                         to={`/admin/products/edit/${p.id}`}
-                        className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100"
-                        title="Edit Entry"
+                        className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all border border-slate-200"
                       >
-                        <span className="text-sm">✏️</span>
+                        ⚙️
                       </Link>
-                      <button 
-                        onClick={() => {
-                          if (window.confirm('IRREVERSIBLE ACTION: Purge this repository entry?')) {
-                            onDelete(p.id);
-                          }
-                        }}
-                        className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm border border-rose-100"
-                        title="Delete Entry"
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="w-12 h-12 flex items-center justify-center bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
                       >
-                        <span className="text-sm">🗑️</span>
+                        🗑️
                       </button>
                     </div>
                   </td>

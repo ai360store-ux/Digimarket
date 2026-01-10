@@ -1,61 +1,51 @@
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useDigiContext } from '../../context/DigiContext';
 
-interface LoginProps {
-  onLogin: () => void;
-}
-
-const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
+const AdminLogin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const { login } = useDigiContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin123') {
-      onLogin();
-      navigate('/admin');
+    if (password === 'admin' || password === 'ai360') {
+      login();
     } else {
-      setError('Invalid system key. Try admin123');
+      setError('AUTHORIZATION REVOKED: INVALID CLEARANCE');
+      setTimeout(() => setError(''), 3000);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050505] px-4">
-      <div className="w-full max-w-md bg-[#121218] rounded-[32px] p-10 border border-white/5 shadow-2xl space-y-10 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-violet-600/10 blur-3xl rounded-full"></div>
-        <div className="text-center relative z-10">
-          <div className="w-16 h-16 bg-violet-600 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-8 shadow-[0_0_30px_rgba(139,92,246,0.4)]">D</div>
-          <h1 className="text-2xl font-black text-white tracking-tighter uppercase mb-2">System Access</h1>
-          <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest leading-none">Enter admin credentials</p>
-        </div>
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <div className="w-full max-w-md bg-slate-900 p-12 rounded-[4rem] border border-white/5 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent"></div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-          <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3">Admin Key</label>
+        <form onSubmit={handleSubmit} className="relative z-10 space-y-10 text-center">
+          <div className="space-y-4">
+            <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center text-4xl border border-white/10 mx-auto shadow-inner">🔐</div>
+            <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Command Entry</h2>
+            <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.4em]">Restricted Administrative Access Only</p>
+          </div>
+
+          <div className="space-y-6">
             <input
               type="password"
-              placeholder="••••••••"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-violet-600/50 focus:border-violet-600 outline-none transition-all text-white placeholder-zinc-700 font-mono"
+              placeholder="ENTER CLEARANCE KEY"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 focus:ring-4 focus:ring-blue-600/20 outline-none transition-all text-white text-center font-mono font-bold placeholder:text-white/20"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              required
             />
-            {error && <p className="mt-4 text-center text-[10px] text-rose-500 font-black uppercase tracking-widest">{error}</p>}
+            {error && <p className="text-rose-500 text-[9px] font-black uppercase tracking-widest animate-pulse">{error}</p>}
           </div>
-          <button
-            type="submit"
-            className="w-full bg-violet-600 text-white font-black py-5 rounded-2xl hover:bg-violet-700 transition-all active:scale-95 shadow-xl shadow-violet-600/20 uppercase text-xs tracking-[0.3em]"
-          >
-            Authorize Session
-          </button>
-        </form>
 
-        <p className="text-center text-[9px] font-black text-zinc-600 uppercase tracking-widest pt-4 space-x-4">
-          <span>Emergency Bypass: <span className="text-zinc-400">admin123</span></span>
-          <span className="text-zinc-700">|</span>
-          <a href="/#/admin/debug" className="text-blue-500 hover:text-blue-400 transition-colors">System Diagnostics</a>
-        </p>
+          <button className="w-full bg-blue-600 text-white font-black py-6 rounded-3xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 uppercase text-[12px] tracking-[0.4em] italic leading-none">
+            Authenticate Node
+          </button>
+
+          <p className="text-white/10 text-[9px] font-black uppercase tracking-[0.5em] pt-4">Global Security Protocol v2.4</p>
+        </form>
       </div>
     </div>
   );
