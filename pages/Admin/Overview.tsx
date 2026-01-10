@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useDigiContext } from '../../context/DigiContext';
 
 const AdminOverview: React.FC = () => {
-  const { products } = useDigiContext();
+  const { products, deleteProduct } = useDigiContext();
 
   const stats = [
     { label: 'Catalog', value: products.length, icon: '📦', color: 'bg-blue-50 text-blue-600 border-blue-100' },
@@ -92,9 +92,21 @@ const AdminOverview: React.FC = () => {
                     <div className="text-sm font-black text-slate-900 tracking-tighter italic">#{product.id.split('-')[1]}</div>
                     <div className="text-[7px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Active</div>
                   </div>
-                  <Link to={`/admin/products/edit/${product.id}`} className="w-8 h-8 bg-white rounded-xl flex items-center justify-center border border-slate-100 hover:bg-slate-900 hover:text-white transition-all shadow-sm text-xs">
-                    ⚙️
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link to={`/admin/products/edit/${product.id}`} className="w-8 h-8 bg-white rounded-xl flex items-center justify-center border border-slate-100 hover:bg-slate-900 hover:text-white transition-all shadow-sm text-xs">
+                      ⚙️
+                    </Link>
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Erase this data node permanently from the vault?")) {
+                          deleteProduct(product.id);
+                        }
+                      }}
+                      className="w-8 h-8 bg-white rounded-xl flex items-center justify-center border border-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-sm text-xs"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
