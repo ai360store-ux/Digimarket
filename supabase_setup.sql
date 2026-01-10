@@ -1,54 +1,44 @@
--- =====================================================================
--- SUPABASE INITIALIZATION SCRIPT (RESET)
--- =====================================================================
--- WARNING: This will DELETE all existing data in the specified tables.
--- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/_/sql/new
--- =====================================================================
 
--- 1. Clean up old tables
-DROP TABLE IF EXISTS dm_products;
-DROP TABLE IF EXISTS dm_categories;
-DROP TABLE IF EXISTS dm_settings;
-DROP TABLE IF EXISTS dm_config;
-
--- 2. Create Products Table
--- Stores all product details including Base64 images in the 'data' JSONB column
-CREATE TABLE dm_products (
-    id TEXT PRIMARY KEY,
-    data JSONB NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- 1. Create Tables
+create table if not exists dm_products (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamp with time zone default now()
 );
 
--- 3. Create Categories Table
-CREATE TABLE dm_categories (
-    id TEXT PRIMARY KEY,
-    data JSONB NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+create table if not exists dm_categories (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamp with time zone default now()
 );
 
--- 4. Create Settings Table
--- Stores store-wide settings like Brand Name, Currency, etc.
-CREATE TABLE dm_settings (
-    id TEXT PRIMARY KEY,
-    data JSONB NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+create table if not exists dm_settings (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamp with time zone default now()
 );
 
--- 5. Create Config Table
--- Stores shared configuration if needed
-CREATE TABLE dm_config (
-    id TEXT PRIMARY KEY,
-    config JSONB NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- 2. Drop Existing Policies (Fix for "Policy Already Exists")
+drop policy if exists "Enable all access for anon" on dm_products;
+drop policy if exists "Enable all access for anon" on dm_categories;
+drop policy if exists "Enable all access for anon" on dm_settings;
 
--- 6. DISABLE ROW LEVEL SECURITY (RLS)
--- CRITICAL STEP: This makes the tables accessible to your application without
--- requiring complex user authentication policies.
-ALTER TABLE dm_products DISABLE ROW LEVEL SECURITY;
-ALTER TABLE dm_categories DISABLE ROW LEVEL SECURITY;
-ALTER TABLE dm_settings DISABLE ROW LEVEL SECURITY;
-ALTER TABLE dm_config DISABLE ROW LEVEL SECURITY;
+-- 3. Enable RLS and Create Policies
+alter table dm_products enable row level security;
+alter table dm_categories enable row level security;
+alter table dm_settings enable row level security;
 
--- 7. Verification Output
-SELECT 'DigiMarket Tables Initialized Successfully' as status;
+create policy "Enable all access for anon" on dm_products for all using (true) with check (true);
+create policy "Enable all access for anon" on dm_categories for all using (true) with check (true);
+create policy "Enable all access for anon" on dm_settings for all using (true) with check (true);
+
+-- 4. Storage Bucket Setup
+insert into storage.buckets (id, name, public) 
+values ('dm_assets', 'dm_assets', true)
+on conflict (id) do nothing;
+
+-- Drop existing storage policy to avoid conflict
+drop policy if exists "Public Access" on storage.objects;
+create policy "Public Access" on storage.objects for all using ( bucket_id = 'dm_assets' );
+
+SELECT 'Setup Complete. Inventory, Data, and Images are ready.' as status;

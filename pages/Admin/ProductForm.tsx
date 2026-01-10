@@ -1,19 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Product, Category, Subsection, PriceOption, AppSettings } from '../../types';
-import { compressImage } from '../../utils/helpers';
+import { Product, Subsection, PriceOption } from '../../types';
+import { useDigiContext } from '../../context/DigiContext';
+import { uploadImage } from '../../utils/supabase';
 
-interface ProductFormProps {
-  products?: Product[];
-  categories: Category[];
-  settings: AppSettings;
-  onSave: (product: Product) => Promise<void> | void;
-}
-
-const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, settings, onSave }) => {
+const AdminProductForm: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { products, categories, settings, addProduct, updateProduct } = useDigiContext();
   const existingProduct = products?.find(p => p.id === id);
 
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -46,31 +41,42 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
   });
 
   const [tagInput, setTagInput] = useState('');
-  const [compressQuality, setCompressQuality] = useState(settings.defaultImageQuality);
+  const [isUploading, setIsUploading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<string>('');
 
   useEffect(() => {
     if (existingProduct) {
       setFormData(existingProduct);
       setTagInput(existingProduct.tags.join(', '));
     }
-  }, [existingProduct, categories]);
+  }, [existingProduct]);
 
+  // Handle direct file upload to storage
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    const newImages: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const compressed = await compressImage(files[i], compressQuality, settings.preferredImageFormat);
-      newImages.push(compressed);
+    setIsUploading(true);
+    const newUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadImage(files[i]);
+        newUrls.push(url);
+      }
+      setFormData(prev => ({ ...prev, images: [...(prev.images || []), ...newUrls] }));
+    } catch (error: any) {
+      alert("Upload Failed: " + error.message);
+    } finally {
+      setIsUploading(false);
     }
-    setFormData(prev => ({ ...prev, images: [...(prev.images || []), ...newImages] }));
   };
 
   const handleRemoveImage = (index: number) => {
     setFormData(prev => ({ ...prev, images: prev.images?.filter((_, i) => i !== index) }));
   };
 
+  // ... (Subsection Logic kept same for design preservation) ...
   const addSubsection = () => {
     const newSub: Subsection = {
       id: 'sub-' + Math.random().toString(36).substr(2, 5),
@@ -136,13 +142,14 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
       ...prev,
       subsections: prev.subsections?.filter(s => s.id !== subId)
     }));
-  }
-
-  const [isSaving, setIsSaving] = useState(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
+    setSaveStatus('Saving...');
+
+    // Validate
+    if (!formData.title) return alert("Title is required");
 
     const finalProduct: Product = {
       ...(formData as Product),
@@ -153,14 +160,17 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
     };
 
     try {
-      // @ts-ignore - The parent (App.tsx) handles the promise even if the prop type says void
-      await onSave(finalProduct);
-      navigate('/admin/products');
-    } catch (e) {
+      if (existingProduct) {
+        await updateProduct(finalProduct);
+      } else {
+        await addProduct(finalProduct);
+      }
+      setSaveStatus('Saved!');
+      setTimeout(() => navigate('/admin/products'), 500);
+    } catch (e: any) {
       console.error(e);
-      alert("Save operation failed.");
-    } finally {
-      setIsSaving(false);
+      setSaveStatus('Error saving');
+      alert("Save operation failed: " + e.message);
     }
   };
 
@@ -210,7 +220,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
             </div>
 
             <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Inventory (Set 0 for Out of Stock)</label>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Inventory</label>
               <input
                 type="number"
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 outline-none transition-all font-bold text-slate-900 text-[14px]"
@@ -220,7 +230,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
             </div>
 
             <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Search Tags (Comma separated)</label>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3">Search Tags</label>
               <input
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-5 outline-none transition-all font-bold text-slate-600 text-[14px] italic"
                 placeholder="action, multiplayer, license, exclusive"
@@ -273,7 +283,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">MRP ({settings.currencySymbol})</label>
+                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">MRP</label>
                         <input
                           type="number"
                           className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-50 outline-none"
@@ -282,7 +292,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Sale Price ({settings.currencySymbol})</label>
+                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Sale Price</label>
                         <input
                           type="number"
                           className="w-full text-[13px] font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-50 outline-none"
@@ -332,9 +342,13 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
                   </button>
                 </div>
               ))}
-              <label className="aspect-square rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 hover:border-blue-600 transition-all group p-4 text-center">
-                <span className="text-3xl mb-4 group-hover:scale-110 transition-transform">📤</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Upload Asset</span>
+              <label className={`aspect-square rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 hover:border-blue-600 transition-all group p-4 text-center ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                <span className="text-3xl mb-4 group-hover:scale-110 transition-transform">
+                  {isUploading ? '⏳' : '📤'}
+                </span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">
+                  {isUploading ? 'Uploading...' : 'Upload Asset'}
+                </span>
                 <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
               </label>
             </div>
@@ -370,11 +384,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ products, categories, se
         </section>
 
         <button
-          disabled={isSaving}
+          disabled={saveStatus === 'Saving...'}
           type="submit"
-          className={`w-full bg-blue-600 text-white font-black px-10 py-6 rounded-[32px] shadow-2xl shadow-blue-600/30 hover:bg-blue-700 transition-all active:scale-95 uppercase text-[14px] tracking-[0.4em] italic ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+          className={`w-full bg-blue-600 text-white font-black px-10 py-6 rounded-[32px] shadow-2xl shadow-blue-600/30 hover:bg-blue-700 transition-all active:scale-95 uppercase text-[14px] tracking-[0.4em] italic ${saveStatus === 'Saving...' ? 'opacity-50 cursor-wait' : ''}`}
         >
-          {isSaving ? 'Saving to Vault...' : 'Save Changes'}
+          {saveStatus || 'Save Changes'}
         </button>
       </div>
     </form>

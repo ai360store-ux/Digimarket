@@ -16,6 +16,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { label: 'Add Product', path: '/admin/products/add', icon: '➕' },
     { label: 'Categories', path: '/admin/categories', icon: '🏷️' },
     { label: 'System Settings', path: '/admin/settings', icon: '⚙️' },
+    { label: 'Diagnostics', path: '/admin/debug', icon: '🩺' },
   ];
 
   const handleLogout = () => {

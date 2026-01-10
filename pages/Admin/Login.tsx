@@ -33,7 +33,7 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
           <div>
             <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3">Admin Key</label>
-            <input 
+            <input
               type="password"
               placeholder="••••••••"
               className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-violet-600/50 focus:border-violet-600 outline-none transition-all text-white placeholder-zinc-700 font-mono"
@@ -43,7 +43,7 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
             />
             {error && <p className="mt-4 text-center text-[10px] text-rose-500 font-black uppercase tracking-widest">{error}</p>}
           </div>
-          <button 
+          <button
             type="submit"
             className="w-full bg-violet-600 text-white font-black py-5 rounded-2xl hover:bg-violet-700 transition-all active:scale-95 shadow-xl shadow-violet-600/20 uppercase text-xs tracking-[0.3em]"
           >
@@ -51,8 +51,10 @@ const AdminLogin: React.FC<LoginProps> = ({ onLogin }) => {
           </button>
         </form>
 
-        <p className="text-center text-[9px] font-black text-zinc-600 uppercase tracking-widest pt-4">
-          Emergency Bypass: <span className="text-zinc-400">admin123</span>
+        <p className="text-center text-[9px] font-black text-zinc-600 uppercase tracking-widest pt-4 space-x-4">
+          <span>Emergency Bypass: <span className="text-zinc-400">admin123</span></span>
+          <span className="text-zinc-700">|</span>
+          <a href="/#/admin/debug" className="text-blue-500 hover:text-blue-400 transition-colors">System Diagnostics</a>
         </p>
       </div>
     </div>
