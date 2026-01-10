@@ -7,91 +7,92 @@ const AdminOverview: React.FC = () => {
   const { products } = useDigiContext();
 
   const stats = [
-    { label: 'Total Catalog', value: products.length, icon: '📦', color: 'bg-blue-50 text-blue-600 border-blue-100' },
-    { label: 'Hot Trending', value: products.filter(p => p.isTrending).length, icon: '🔥', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+    { label: 'Catalog', value: products.length, icon: '📦', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+    { label: 'Trending', value: products.filter(p => p.isTrending).length, icon: '🔥', color: 'bg-rose-50 text-rose-600 border-rose-100' },
     { label: 'Bestsellers', value: products.filter(p => p.isBestseller).length, icon: '🏆', color: 'bg-amber-50 text-amber-600 border-amber-100' },
     { label: 'New Nodes', value: products.filter(p => p.isNew).length, icon: '✨', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
   ];
 
   const quicklinks = [
-    { label: 'Deploy New Asset', to: '/admin/products/add', icon: '➕', desc: 'Add products to inventory' },
-    { label: 'Manage Products', to: '/admin/products', icon: '📝', desc: 'Edit or remove listings' },
-    { label: 'Market Sectors', to: '/admin/categories', icon: '📁', desc: 'Manage categories' },
-    { label: 'Global Setup', to: '/admin/settings', icon: '⚙️', desc: 'API & Brand identity' },
+    { label: 'New Asset', to: '/admin/products/add', icon: '➕', desc: 'Add product' },
+    { label: 'Inventory', to: '/admin/products', icon: '📝', desc: 'Edit listings' },
+    { label: 'Sectors', to: '/admin/categories', icon: '📂', desc: 'Categories' },
+    { label: 'System', to: '/admin/settings', icon: '⚙️', desc: 'API & Identity' },
   ];
 
   return (
-    <div className="space-y-12">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
-        <div className="space-y-1">
-          <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic">Command Control</h2>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em]">Vault Management Infrastructure</p>
+    <div className="space-y-8">
+      {/* Header Section - Tighter */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
+        <div className="space-y-0.5">
+          <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter italic">Command Control</h2>
+          <p className="text-slate-400 text-[8px] font-black uppercase tracking-[0.3em]">Vault Management Infrastructure</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-2xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest italic animate-pulse">
+        <div className="flex items-center gap-3">
+          <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl border border-emerald-100 text-[9px] font-black uppercase tracking-widest italic flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
             Database Live
           </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+      {/* Stats Grid - Smaller cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <div key={i} className={`p-8 rounded-[2.5rem] border ${stat.color} shadow-sm transition-transform hover:scale-105 duration-500`}>
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-3xl">{stat.icon}</span>
-              <div className="w-10 h-1 bg-current opacity-20 rounded-full"></div>
+          <div key={i} className={`p-5 rounded-3xl border ${stat.color} shadow-sm transition-all hover:shadow-md`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xl">{stat.icon}</span>
+              <div className="w-8 h-0.5 bg-current opacity-20 rounded-full"></div>
             </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60 italic">{stat.label}</p>
-              <h4 className="text-4xl font-black tracking-tighter italic leading-none">{stat.value}</h4>
+            <div className="space-y-0.5">
+              <p className="text-[9px] font-black uppercase tracking-widest opacity-60 italic">{stat.label}</p>
+              <h4 className="text-2xl font-black tracking-tighter italic leading-none">{stat.value}</h4>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Actions Grid - Tighter cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quicklinks.map(link => (
           <Link
             key={link.to}
             to={link.to}
-            className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm hover:border-blue-200 transition-all group hover:shadow-xl hover:shadow-blue-50/50"
+            className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:border-blue-200 transition-all group hover:shadow-md active:scale-95"
           >
-            <div className="w-14 h-14 bg-slate-50 flex items-center justify-center rounded-2xl text-2xl group-hover:scale-110 transition-transform mb-6">
+            <div className="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl text-lg group-hover:scale-110 transition-transform mb-3">
               {link.icon}
             </div>
-            <h4 className="font-black text-slate-900 uppercase tracking-tight italic mb-2">{link.label}</h4>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">{link.desc}</p>
+            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight italic mb-1">{link.label}</h4>
+            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest leading-none">{link.desc}</p>
           </Link>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-6">
-        <div className="lg:col-span-8 bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-10">
-          <div className="flex items-center justify-between border-b border-slate-50 pb-6">
-            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Recent Updates</h3>
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest italic bg-blue-50 px-4 py-2 rounded-xl">Live Feed</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-2">
+        <div className="lg:col-span-8 bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-50 pb-4">
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter italic">Recent Updates</h3>
+            <span className="text-[8px] font-black text-blue-600 uppercase tracking-widest italic bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">Live Feed</span>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-3">
             {products.slice(0, 5).map(product => (
-              <div key={product.id} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition-all">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white shadow-md">
+              <div key={product.id} className="flex items-center justify-between p-3.5 bg-slate-50/50 rounded-2xl border border-slate-100/50 group hover:border-blue-200 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden border border-white shadow-sm">
                     <img src={product.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                   </div>
                   <div>
-                    <h5 className="font-black text-slate-900 uppercase tracking-tight italic">{product.title}</h5>
-                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">{product.category}</p>
+                    <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-tight italic">{product.title}</h5>
+                    <p className="text-slate-400 text-[8px] font-bold uppercase tracking-widest mt-0.5">{product.category}</p>
                   </div>
                 </div>
-                <div className="text-right flex items-center gap-6">
-                  <div>
-                    <div className="text-lg font-black text-slate-900 tracking-tighter italic">ID: {product.id}</div>
-                    <div className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Status: Active</div>
+                <div className="text-right flex items-center gap-4">
+                  <div className="hidden sm:block">
+                    <div className="text-sm font-black text-slate-900 tracking-tighter italic">#{product.id.split('-')[1]}</div>
+                    <div className="text-[7px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Active</div>
                   </div>
-                  <Link to={`/admin/products/edit/${product.id}`} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-100 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                  <Link to={`/admin/products/edit/${product.id}`} className="w-8 h-8 bg-white rounded-xl flex items-center justify-center border border-slate-100 hover:bg-slate-900 hover:text-white transition-all shadow-sm text-xs">
                     ⚙️
                   </Link>
                 </div>
@@ -100,32 +101,35 @@ const AdminOverview: React.FC = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-4 space-y-10">
-          <div className="bg-slate-900 p-10 rounded-[3.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-600/20 blur-[60px] rounded-full"></div>
-            <h3 className="text-xl font-black uppercase tracking-tighter italic relative z-10">System Status</h3>
-            <div className="space-y-6 relative z-10">
-              <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Database Node</span>
-                <span className="text-[10px] font-black text-emerald-400 uppercase italic">Online Connected</span>
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white space-y-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-[40px] rounded-full"></div>
+            <h3 className="text-sm font-black uppercase tracking-tighter italic relative z-10">Infrastructure</h3>
+            <div className="space-y-4 relative z-10">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">DB Node</span>
+                <span className="text-[8px] font-black text-emerald-400 uppercase italic flex items-center gap-1.5">
+                  <span className="w-1 h-1 bg-emerald-400 rounded-full animate-ping"></span>
+                  Online
+                </span>
               </div>
-              <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Storage Vault</span>
-                <span className="text-[10px] font-black text-emerald-400 uppercase italic">Synchronized</span>
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Vault</span>
+                <span className="text-[8px] font-black text-emerald-400 uppercase italic">Sync'd</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">API Engine</span>
-                <span className="text-[10px] font-black text-emerald-400 uppercase italic">Stable 2.0</span>
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40">Engine</span>
+                <span className="text-[8px] font-black text-emerald-400 uppercase italic">v3.1</span>
               </div>
             </div>
-            <div className="pt-4">
-              <div className="w-full bg-white/5 p-4 rounded-2xl border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white/30">Auto-Backup</span>
-                  <span className="text-[9px] font-black text-white/60">Every 4H</span>
+            <div className="pt-2">
+              <div className="w-full bg-white/5 p-3 rounded-xl border border-white/10">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">Auto-Backup</span>
+                  <span className="text-[8px] font-black text-white/50">85%</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full w-[85%] bg-blue-500 rounded-full animate-pulse"></div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full w-[85%] bg-blue-500 rounded-full"></div>
                 </div>
               </div>
             </div>

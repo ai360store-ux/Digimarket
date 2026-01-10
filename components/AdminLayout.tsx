@@ -8,12 +8,12 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
-    <div className="flex gap-10">
-      {/* Persistent Sidebar */}
+    <div className="flex gap-8">
+      {/* Optimized Sidebar - now 60 units wide */}
       <AdminSidebar />
 
-      {/* Content Area - shifted right on desktop to make room for sidebar */}
-      <div className="flex-1 lg:ml-80">
+      {/* Content Area - tighter margins */}
+      <div className="flex-1 lg:ml-64">
         {children}
       </div>
     </div>

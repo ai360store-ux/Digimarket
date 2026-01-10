@@ -1,16 +1,18 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDigiContext } from '../../context/DigiContext';
 
 const AdminLogin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useDigiContext();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === 'admin' || password === 'ai360') {
       login();
+      navigate('/admin');
     } else {
       setError('AUTHORIZATION REVOKED: INVALID CLEARANCE');
       setTimeout(() => setError(''), 3000);

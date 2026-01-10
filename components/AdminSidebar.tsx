@@ -7,51 +7,51 @@ const AdminSidebar: React.FC = () => {
     const { logout } = useDigiContext();
 
     const navItems = [
-        { to: '/admin', label: 'Overview', icon: '📊' },
+        { to: '/admin', label: 'Overview', icon: '📈' },
         { to: '/admin/products', label: 'Products', icon: '📦' },
-        { to: '/admin/categories', label: 'Categories', icon: '📁' },
+        { to: '/admin/categories', label: 'Categories', icon: '📂' },
         { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
     ];
 
     return (
-        <aside className="fixed left-4 top-40 w-72 bg-white/80 backdrop-blur-2xl border border-white/20 rounded-[3rem] shadow-2xl p-8 space-y-12 z-50 hidden lg:block">
-            <div className="space-y-4">
-                <div className="flex items-center gap-4 px-4">
-                    <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl border-4 border-blue-50 shadow-xl shadow-blue-200">
+        <aside className="fixed left-4 top-32 w-60 bg-white/90 backdrop-blur-3xl border border-slate-200/60 rounded-3xl shadow-xl p-6 space-y-10 z-50 hidden lg:block">
+            <div className="">
+                <div className="flex items-center gap-3 px-2">
+                    <div className="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center text-white text-sm font-black italic shadow-lg">
                         A
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-slate-900 uppercase italic tracking-tighter">Admin Node</h3>
-                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest italic animate-pulse">Authenticated</p>
+                        <h3 className="text-[11px] font-black text-slate-900 uppercase italic tracking-tight">Admin Portal</h3>
+                        <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic opacity-80">Online</p>
                     </div>
                 </div>
             </div>
 
-            <nav className="space-y-2">
+            <nav className="space-y-1">
                 {navItems.map(item => (
                     <NavLink
                         key={item.to}
                         to={item.to}
                         end={item.to === '/admin'}
                         className={({ isActive }) => `
-                            flex items-center gap-6 px-6 py-5 rounded-3xl transition-all font-black uppercase text-[11px] tracking-widest italic
+                            flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest italic
                             ${isActive
-                                ? 'bg-slate-900 text-white shadow-xl shadow-slate-300'
+                                ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
                                 : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50'}
                         `}
                     >
-                        <span className="text-xl opacity-60">{item.icon}</span>
+                        <span className="text-base opacity-70">{item.icon}</span>
                         {item.label}
                     </NavLink>
                 ))}
             </nav>
 
-            <div className="pt-12 border-t border-slate-100">
+            <div className="pt-6 border-t border-slate-100">
                 <button
                     onClick={logout}
-                    className="w-full flex items-center gap-6 px-6 py-5 rounded-3xl text-rose-600 font-black uppercase text-[11px] tracking-widest italic hover:bg-rose-50 transition-all group"
+                    className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-rose-600 font-black uppercase text-[10px] tracking-widest italic hover:bg-rose-50 transition-all group"
                 >
-                    <span className="text-xl group-hover:rotate-12 transition-transform">Logout</span>
+                    <span className="text-base group-hover:rotate-12 transition-transform">🚪 Logout</span>
                 </button>
             </div>
         </aside>
