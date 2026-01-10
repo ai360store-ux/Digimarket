@@ -5,8 +5,15 @@ import { getSupabaseConfig, saveSupabaseConfig, isCloudConnected } from '../../u
 
 const AdminSettings: React.FC = () => {
   const { settings, updateSettings, isLive, refreshData } = useDigiContext();
-  const [cloudConfig, setCloudConfig] = useState(() => getSupabaseConfig() || { projectId: '', key: '' });
-  const [testStatus, setTestStatus] = useState({ type: 'idle', message: '' });
+  const [cloudConfig, setCloudConfig] = useState(() => {
+    const cfg = getSupabaseConfig();
+    return {
+      projectId: cfg?.projectId || '',
+      key: cfg?.key || ''
+    };
+  });
+  const [isENVActive] = useState(() => !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_KEY));
+  const [showKey, setShowKey] = useState(false);
 
   const handleSaveConfig = async () => {
     if (!cloudConfig.projectId || !cloudConfig.key) {
@@ -47,20 +54,37 @@ const AdminSettings: React.FC = () => {
               <div>
                 <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-4">Project Workspace ID</label>
                 <input
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 outline-none transition-all text-white font-mono text-sm"
+                  className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-5 outline-none transition-all text-white font-mono text-sm focus:border-blue-500/50 shadow-inner"
+                  placeholder="e.g. xyz-project-id"
                   value={cloudConfig.projectId}
                   onChange={e => setCloudConfig({ ...cloudConfig, projectId: e.target.value })}
                 />
               </div>
-              <div>
+              <div className="relative">
                 <label className="block text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-4">Master Service Key</label>
-                <input
-                  type="password"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 outline-none transition-all text-white font-mono text-sm"
-                  value={cloudConfig.key}
-                  onChange={e => setCloudConfig({ ...cloudConfig, key: e.target.value })}
-                />
+                <div className="relative">
+                  <input
+                    type={showKey ? "text" : "password"}
+                    className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-6 py-5 outline-none transition-all text-white font-mono text-sm focus:border-blue-500/50 shadow-inner pr-16"
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    value={cloudConfig.key}
+                    onChange={e => setCloudConfig({ ...cloudConfig, key: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-white/30 uppercase tracking-widest hover:text-white"
+                  >
+                    {showKey ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
+              {isENVActive && (
+                <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest italic flex items-center gap-2 bg-amber-400/10 p-3 rounded-xl border border-amber-400/20">
+                  <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
+                  Warning: Environment Variables (VITE_*) are active and will override these settings.
+                </p>
+              )}
             </div>
             <div className="flex flex-col justify-center space-y-6">
               <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-2xl">

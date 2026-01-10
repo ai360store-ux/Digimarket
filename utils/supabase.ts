@@ -7,7 +7,10 @@ export const getSupabaseConfig = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_KEY;
 
-  if (envUrl && envKey) return { url: envUrl, key: envKey };
+  if (envUrl && envKey) {
+    const projectId = envUrl.split('//')[1]?.split('.')[0] || '';
+    return { projectId, url: envUrl, key: envKey };
+  }
 
   try {
     const saved = localStorage.getItem('dm_supabase_config');
