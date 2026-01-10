@@ -1,9 +1,11 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useDigiContext } from '../../context/DigiContext';
 
 const AdminOverview: React.FC = () => {
   const { products } = useDigiContext();
+
   const stats = [
     { label: 'Total Catalog', value: products.length, icon: '📦', color: 'bg-blue-50 text-blue-600 border-blue-100' },
     { label: 'Hot Trending', value: products.filter(p => p.isTrending).length, icon: '🔥', color: 'bg-rose-50 text-rose-600 border-rose-100' },
@@ -11,8 +13,29 @@ const AdminOverview: React.FC = () => {
     { label: 'New Nodes', value: products.filter(p => p.isNew).length, icon: '✨', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
   ];
 
+  const quicklinks = [
+    { label: 'Deploy New Asset', to: '/admin/products/add', icon: '➕', desc: 'Add products to inventory' },
+    { label: 'Manage Products', to: '/admin/products', icon: '📝', desc: 'Edit or remove listings' },
+    { label: 'Market Sectors', to: '/admin/categories', icon: '📁', desc: 'Manage categories' },
+    { label: 'Global Setup', to: '/admin/settings', icon: '⚙️', desc: 'API & Brand identity' },
+  ];
+
   return (
     <div className="space-y-12">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
+        <div className="space-y-1">
+          <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter italic">Command Control</h2>
+          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em]">Vault Management Infrastructure</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="bg-emerald-50 text-emerald-600 px-6 py-3 rounded-2xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest italic animate-pulse">
+            Database Live
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
         {stats.map((stat, i) => (
           <div key={i} className={`p-8 rounded-[2.5rem] border ${stat.color} shadow-sm transition-transform hover:scale-105 duration-500`}>
@@ -28,7 +51,24 @@ const AdminOverview: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {quicklinks.map(link => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm hover:border-blue-200 transition-all group hover:shadow-xl hover:shadow-blue-50/50"
+          >
+            <div className="w-14 h-14 bg-slate-50 flex items-center justify-center rounded-2xl text-2xl group-hover:scale-110 transition-transform mb-6">
+              {link.icon}
+            </div>
+            <h4 className="font-black text-slate-900 uppercase tracking-tight italic mb-2">{link.label}</h4>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">{link.desc}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-6">
         <div className="lg:col-span-8 bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-10">
           <div className="flex items-center justify-between border-b border-slate-50 pb-6">
             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter italic">Recent Updates</h3>
@@ -46,9 +86,14 @@ const AdminOverview: React.FC = () => {
                     <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">{product.category}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-black text-slate-900 tracking-tighter italic">ID: {product.id}</div>
-                  <div className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Status: Active</div>
+                <div className="text-right flex items-center gap-6">
+                  <div>
+                    <div className="text-lg font-black text-slate-900 tracking-tighter italic">ID: {product.id}</div>
+                    <div className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Status: Active</div>
+                  </div>
+                  <Link to={`/admin/products/edit/${product.id}`} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-slate-100 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                    ⚙️
+                  </Link>
                 </div>
               </div>
             ))}

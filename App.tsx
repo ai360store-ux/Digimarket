@@ -9,6 +9,7 @@ import { DigiProvider, useDigiContext } from './context/DigiContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminLayout from './components/AdminLayout';
 
 // 3. Pages
 import Home from './pages/Storefront/Home';
@@ -23,7 +24,6 @@ import AdminSettings from './pages/Admin/AdminSettings';
 import DebugPage from './pages/Admin/Debug';
 
 // --- MAIN CONTENT WRAPPER ---
-// Consumes context to handle global UI states (like loading)
 const AppContent: React.FC = () => {
   const { isLoading } = useDigiContext();
 
@@ -48,14 +48,14 @@ const AppContent: React.FC = () => {
           <Route path="/category/:slug" element={<CategoryProducts />} />
           <Route path="/search" element={<Home />} />
 
-          {/* Admin */}
-          <Route path="/admin" element={<ProtectedRoute><AdminOverview /></ProtectedRoute>} />
+          {/* Admin Routes with Layout */}
+          <Route path="/admin" element={<ProtectedRoute><AdminLayout><AdminOverview /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/products" element={<ProtectedRoute><AdminProductList /></ProtectedRoute>} />
-          <Route path="/admin/products/add" element={<ProtectedRoute><AdminProductForm /></ProtectedRoute>} />
-          <Route path="/admin/products/edit/:id" element={<ProtectedRoute><AdminProductForm /></ProtectedRoute>} />
-          <Route path="/admin/categories" element={<ProtectedRoute><AdminCategories /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+          <Route path="/admin/products" element={<ProtectedRoute><AdminLayout><AdminProductList /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/products/add" element={<ProtectedRoute><AdminLayout><AdminProductForm /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/products/edit/:id" element={<ProtectedRoute><AdminLayout><AdminProductForm /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/categories" element={<ProtectedRoute><AdminLayout><AdminCategories /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute><AdminLayout><AdminSettings /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/debug" element={<DebugPage />} />
 
           <Route path="*" element={<Navigate to="/" />} />
@@ -66,7 +66,6 @@ const AppContent: React.FC = () => {
   );
 };
 
-// --- ROOT APP ---
 function App() {
   return (
     <HashRouter>

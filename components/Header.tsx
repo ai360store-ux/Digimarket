@@ -4,13 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDigiContext } from '../context/DigiContext';
 
 const Header: React.FC = () => {
-  const { categories, products, settings } = useDigiContext();
+  const { categories, products, settings, isAdmin, logout } = useDigiContext();
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Safety fallback for brand name
   const brandName = settings?.brandName || 'REPOSITORY';
 
   const handleSearch = (e: React.FormEvent) => {
@@ -44,7 +43,7 @@ const Header: React.FC = () => {
       <nav className="max-w-[1500px] mx-auto flex h-16 md:h-20 items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-10">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-xl italic">V</div>
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-xl italic transition-transform hover:scale-110">V</div>
             <span className="text-slate-900 font-black text-xl md:text-2xl tracking-tighter uppercase whitespace-nowrap">{brandName}</span>
           </Link>
 
@@ -54,13 +53,13 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           <div className="relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
                 placeholder="Repository search..."
-                className="h-10 md:h-11 w-40 sm:w-64 rounded-xl bg-slate-50 border border-slate-200 pl-10 pr-4 text-[14px] font-semibold text-slate-900 focus:outline-none focus:bg-white focus:ring-4 focus:ring-slate-100 transition-all"
+                className="h-10 md:h-11 w-32 sm:w-64 rounded-xl bg-slate-50 border border-slate-200 pl-10 pr-4 text-[14px] font-semibold text-slate-900 focus:outline-none focus:bg-white focus:ring-4 focus:ring-slate-100 transition-all"
                 value={search}
                 onFocus={() => setShowSuggestions(true)}
                 onChange={(e) => setSearch(e.target.value)}
@@ -89,9 +88,24 @@ const Header: React.FC = () => {
               </div>
             )}
           </div>
-          <Link to="/admin" className="hidden sm:flex items-center gap-3 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95">
-            Admin
-          </Link>
+
+          {isAdmin ? (
+            <div className="flex items-center gap-3 bg-slate-900 p-1.5 rounded-2xl shadow-xl shadow-slate-200 border border-slate-800">
+              <Link to="/admin" className="text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
+                Panel
+              </Link>
+              <button
+                onClick={logout}
+                className="bg-rose-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-700 transition-all shadow-lg active:scale-95"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link to="/admin" className="hidden sm:flex items-center gap-3 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95 border border-slate-700">
+              Admin
+            </Link>
+          )}
         </div>
       </nav>
 
