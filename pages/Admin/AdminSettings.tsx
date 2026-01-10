@@ -4,17 +4,17 @@ import { useDigiContext } from '../../context/DigiContext';
 import { getSupabaseConfig, saveSupabaseConfig, isCloudConnected } from '../../utils/supabase';
 
 const AdminSettings: React.FC = () => {
-  const { settings, updateSettings } = useDigiContext();
+  const { settings, updateSettings, isLive, refreshData } = useDigiContext();
   const [cloudConfig, setCloudConfig] = useState(() => getSupabaseConfig() || { projectId: '', key: '' });
   const [testStatus, setTestStatus] = useState({ type: 'idle', message: '' });
 
-  const handleSaveConfig = () => {
+  const handleSaveConfig = async () => {
     if (!cloudConfig.projectId || !cloudConfig.key) {
       return alert("Master Keys Required.");
     }
     saveSupabaseConfig(cloudConfig.projectId, cloudConfig.key);
-    setTestStatus({ type: 'success', message: 'Configuration Saved Locally & Globally' });
-    alert("✓ System Hardware Reset: New Database Keys Applied.");
+    await refreshData();
+    alert("✓ System Hardware Reset: New Database Keys Applied. System is attempting to re-sync.");
   };
 
   const handleUpdateIdentity = async () => {
@@ -28,11 +28,17 @@ const AdminSettings: React.FC = () => {
       <section className="bg-slate-900 p-10 md:p-14 rounded-[3.5rem] border border-white/5 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative z-10 space-y-12">
-          <div className="flex items-center gap-6 border-b border-white/5 pb-10">
-            <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-3xl border border-white/10 shadow-inner">🔗</div>
-            <div>
-              <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Vault Connection Matrix</h3>
-              <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Primary Supabase Linkage</p>
+          <div className="flex items-center justify-between border-b border-white/5 pb-10">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-3xl border border-white/10 shadow-inner">🔗</div>
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">Vault Connection Matrix</h3>
+                <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Primary Supabase Linkage</p>
+              </div>
+            </div>
+            <div className={`px-6 py-3 rounded-2xl border ${isLive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'} text-[10px] font-black uppercase tracking-widest italic flex items-center gap-3`}>
+              <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`}></span>
+              {isLive ? 'Active Link' : 'Link Offline'}
             </div>
           </div>
 

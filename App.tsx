@@ -56,7 +56,7 @@ const AppContent: React.FC = () => {
           <Route path="/admin/products/edit/:id" element={<ProtectedRoute><AdminLayout><AdminProductForm /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/categories" element={<ProtectedRoute><AdminLayout><AdminCategories /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><AdminLayout><AdminSettings /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/debug" element={<DebugPage />} />
+          <Route path="/admin/debug" element={<ProtectedRoute><AdminLayout><DebugPage /></AdminLayout></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useDigiContext } from '../../context/DigiContext';
 
 const AdminOverview: React.FC = () => {
-  const { products, deleteProduct } = useDigiContext();
+  const { products, deleteProduct, isLive } = useDigiContext();
 
   const stats = [
     { label: 'Catalog', value: products.length, icon: '📦', color: 'bg-blue-50 text-blue-600 border-blue-100' },
@@ -29,9 +29,9 @@ const AdminOverview: React.FC = () => {
           <p className="text-slate-400 text-[8px] font-black uppercase tracking-[0.3em]">Vault Management Infrastructure</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl border border-emerald-100 text-[9px] font-black uppercase tracking-widest italic flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            Database Live
+          <div className={`${isLive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'} px-4 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest italic flex items-center gap-2`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
+            {isLive ? 'Database Live' : 'Offline / Mock Mode'}
           </div>
         </div>
       </div>

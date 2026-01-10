@@ -12,6 +12,7 @@ interface DigiContextType {
     settings: AppSettings;
     isAdmin: boolean;
     isLoading: boolean;
+    isLive: boolean;
     refreshData: () => Promise<void>;
     updateProduct: (product: Product) => Promise<void>;
     addProduct: (product: Product) => Promise<void>;
@@ -31,6 +32,7 @@ export const DigiProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [settings, setSettings] = useState<AppSettings>(INITIAL_SETTINGS);
     const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('dm_admin_auth') === 'true');
     const [isLoading, setIsLoading] = useState(true);
+    const [isLive, setIsLive] = useState(false);
 
     const refreshData = async () => {
         if (!isCloudConnected()) {
@@ -50,8 +52,10 @@ export const DigiProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProducts(p.data?.length ? p.data : INITIAL_PRODUCTS);
             setCategories(c.data?.length ? c.data : INITIAL_CATEGORIES);
             if (s.data?.length) setSettings(s.data[0]);
+            setIsLive(true);
         } catch (e) {
             console.error("Fetch failed", e);
+            setIsLive(false);
             // Fallback to defaults on total failure
             setProducts(INITIAL_PRODUCTS);
             setCategories(INITIAL_CATEGORIES);
@@ -139,7 +143,7 @@ export const DigiProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return (
         <DigiContext.Provider value={{
-            products, categories, settings, isAdmin, isLoading,
+            products, categories, settings, isAdmin, isLoading, isLive,
             refreshData, updateProduct, addProduct, deleteProduct,
             addCategory, deleteCategory, updateSettings,
             login, logout

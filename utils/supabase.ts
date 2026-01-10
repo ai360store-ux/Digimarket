@@ -34,10 +34,14 @@ export const supabase = () => {
   return supabaseInstance;
 };
 
-export const isCloudConnected = () => !!supabase();
+export const isCloudConnected = () => {
+  const config = getSupabaseConfig();
+  return !!(config?.url && config?.key);
+};
 
 export const saveSupabaseConfig = (projectId: string, key: string) => {
-  const config = { projectId, url: `https://${projectId}.supabase.co`, key };
+  const url = `https://${projectId}.supabase.co`;
+  const config = { projectId, url, key };
   localStorage.setItem('dm_supabase_config', JSON.stringify(config));
   initSupabase(true); // Force re-init after saving
 };

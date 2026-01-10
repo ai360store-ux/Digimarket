@@ -11,6 +11,7 @@ const AdminSidebar: React.FC = () => {
         { to: '/admin/products', label: 'Products', icon: '📦' },
         { to: '/admin/categories', label: 'Categories', icon: '📂' },
         { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
+        { to: '/admin/debug', label: 'Diagnostics', icon: '🛠️' },
     ];
 
     return (
